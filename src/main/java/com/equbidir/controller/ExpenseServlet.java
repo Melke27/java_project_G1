@@ -1,7 +1,10 @@
 package com.equbidir.controller;
 
 import com.equbidir.dao.ExpenseDAO;
+import com.equbidir.dao.EqubDAO;
 import com.equbidir.model.Expense;
+import com.equbidir.model.EqubGroup;
+import com.equbidir.model.Contribution;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,6 +22,7 @@ import java.util.Map;
 public class ExpenseServlet extends HttpServlet {
 
     private final ExpenseDAO expenseDAO = new ExpenseDAO();
+    private final EqubDAO equbDAO = new EqubDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -34,13 +38,22 @@ public class ExpenseServlet extends HttpServlet {
             request.setAttribute("monthlyTotals", monthlyTotals);
             request.setAttribute("totalExpenses", totalExpenses);
             request.setAttribute("fundBalance", fundBalance);
+            
             String uri = request.getRequestURI();
+            if (uri != null && uri.endsWith("/reports")) {
+                // Load Equb data for reports
+                List<EqubGroup> equbGroups = equbDAO.findAllGroups();
+                List<Contribution> allContributions = equbDAO.findAllContributions();
+                request.setAttribute("equbGroups", equbGroups);
+                request.setAttribute("allContributions", allContributions);
+            }
+            
             String view = uri != null && uri.endsWith("/reports")
                     ? "/views/admin/reports.jsp"
                     : "/views/admin/expense_management.jsp";
             request.getRequestDispatcher(view).forward(request, response);
         } catch (SQLException e) {
-            throw new ServletException("Failed to load expenses", e);
+            throw new ServletException("Failed to load data", e);
         }
     }
 
