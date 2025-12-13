@@ -9,34 +9,40 @@ import java.util.List;
 
 public class MemberDAO {
 
-    public Member authenticate(String phone, String passwordHash) throws SQLException {
-        String sql = "SELECT member_id, full_name, phone, address, password_hash, role FROM members WHERE phone=?";
+    public Member authenticate(String phone, String plainPassword) throws SQLException {
+        String sql = "SELECT member_id, full_name, phone, address, password_hash, role FROM members WHERE phone = ?";
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, phone);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return null;
-                String storedHash = rs.getString("password_hash");
-                if (!storedHash.equals(passwordHash)) return null;
 
-                Member m = new Member();
-                m.setMemberId(rs.getInt("member_id"));
-                m.setFullName(rs.getString("full_name"));
-                m.setPhone(rs.getString("phone"));
-                m.setAddress(rs.getString("address"));
-                m.setPasswordHash(storedHash);
-                m.setRole(rs.getString("role"));
-                return m;
+            ps.setString(1, phone.trim());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String storedHash = rs.getString("password_hash");
+
+                    if (com.equbidir.util.SecurityUtil.checkPassword(plainPassword, storedHash)) {
+                        return new Member(
+                                rs.getInt("member_id"),
+                                rs.getString("full_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("role")
+                        );
+                    }
+                }
             }
         }
+        return null;
     }
 
     public List<Member> getAllMembers() throws SQLException {
         List<Member> members = new ArrayList<>();
-        String sql = "SELECT member_id, full_name, phone, address, role FROM members ORDER BY member_id DESC";
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members ORDER BY full_name ASC";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 members.add(new Member(
                         rs.getInt("member_id"),
@@ -50,48 +56,86 @@ public class MemberDAO {
         return members;
     }
 
-    public void createMember(Member m) throws SQLException {
-        String sql = "INSERT INTO members(full_name, phone, address, password_hash, role) VALUES(?,?,?,?,?)";
+    public boolean createMember(Member member, String plainPassword) throws SQLException {
+        if (getMemberByPhone(member.getPhone()) != null) {
+            return false;
+        }
+
+        String hashedPassword = com.equbidir.util.SecurityUtil.hashPassword(plainPassword);
+
+        String sql = "INSERT INTO members (full_name, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?)";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, m.getFullName());
-            ps.setString(2, m.getPhone());
-            ps.setString(3, m.getAddress());
-            ps.setString(4, m.getPasswordHash());
-            ps.setString(5, m.getRole());
-            ps.executeUpdate();
+
+            ps.setString(1, member.getFullName());
+            ps.setString(2, member.getPhone());
+            ps.setString(3, member.getAddress());
+            ps.setString(4, hashedPassword);
+            ps.setString(5, member.getRole() != null ? member.getRole() : "member");
+
+            return ps.executeUpdate() > 0;
         }
     }
 
-    public void updateMember(Member m) throws SQLException {
-        String sql = "UPDATE members SET full_name=?, phone=?, address=?, role=? WHERE member_id=?";
+    public Member getMemberByPhone(String phone) throws SQLException {
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE phone = ?";
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, m.getFullName());
-            ps.setString(2, m.getPhone());
-            ps.setString(3, m.getAddress());
-            ps.setString(4, m.getRole());
-            ps.setInt(5, m.getMemberId());
-            ps.executeUpdate();
+
+            ps.setString(1, phone.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean updateMember(Member member) throws SQLException {
+        String sql = "UPDATE members SET full_name = ?, phone = ?, address = ?, role = ? WHERE member_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, member.getFullName());
+            ps.setString(2, member.getPhone());
+            ps.setString(3, member.getAddress());
+            ps.setString(4, member.getRole());
+            ps.setInt(5, member.getMemberId());
+
+            return ps.executeUpdate() > 0;
         }
     }
 
-    public void resetPassword(int memberId, String newPasswordHash) throws SQLException {
-        String sql = "UPDATE members SET password_hash=? WHERE member_id=?";
+    public boolean resetPassword(int memberId, String newPlainPassword) throws SQLException {
+        String hashed = com.equbidir.util.SecurityUtil.hashPassword(newPlainPassword);
+        String sql = "UPDATE members SET password_hash = ? WHERE member_id = ?";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, newPasswordHash);
+
+            ps.setString(1, hashed);
             ps.setInt(2, memberId);
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         }
     }
 
-    public void deleteMember(int memberId) throws SQLException {
-        String sql = "DELETE FROM members WHERE member_id=?";
+    public boolean deleteMember(int memberId) throws SQLException {
+        String sql = "DELETE FROM members WHERE member_id = ?";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, memberId);
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         }
     }
 }
