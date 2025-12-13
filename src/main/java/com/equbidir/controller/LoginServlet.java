@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.equbidir.model.Member;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
 
@@ -52,14 +53,12 @@ public class LoginServlet extends HttpServlet {
                 int memberId = rs.getInt("member_id");
 
                 if (SecurityUtil.checkPassword(password, storedHash)) {
-                    HttpSession session = request.getSession();
-                    session.setAttribute("memberId", memberId);
-                    session.setAttribute("fullName", fullName);
-                    session.setAttribute("phone", phone.trim());
-                    session.setAttribute("role", role);
+                    Member member = new Member(memberId, fullName, phone.trim(), "", role);
 
-                    response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-                } else {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user", member);
+                    response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+                }else {
                     request.setAttribute("error", "Incorrect password.");
                     request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
                 }
