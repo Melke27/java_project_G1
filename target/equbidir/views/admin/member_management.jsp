@@ -1,113 +1,117 @@
-<%@ page import="java.util.List" %>
 <%@ page import="com.equbidir.model.Member" %>
+<%@ page import="com.equbidir.dao.MemberDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Member Management</title>
-    <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Management - Equb & Idir Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/admin-dashboard.css">
 </head>
 <body>
-<div class="container">
-    <h1>Member Management</h1>
-    <a class="link" href="<%=request.getContextPath()%>/admin/dashboard">← Back to Dashboard</a>
+<%
+    Member admin = (Member) session.getAttribute("user");
+    if (admin == null || !"admin".equalsIgnoreCase(admin.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+        return;
+    }
 
-    <div class="card">
-        <h2>Add Member</h2>
-        <form method="post" action="<%=request.getContextPath()%>/admin/members">
-            <input type="hidden" name="action" value="create" />
-            <label>Full Name</label>
-            <input type="text" name="full_name" required />
+    MemberDAO memberDAO = new MemberDAO();
+    List<Member> members = memberDAO.getAllMembers();
 
-            <label>Phone</label>
-            <input type="text" name="phone" required />
-
-            <label>Address</label>
-            <input type="text" name="address" />
-
-            <label>Role</label>
-            <select name="role">
-                <option value="member">member</option>
-                <option value="admin">admin</option>
-            </select>
-
-            <label>Password (optional, default 123456)</label>
-            <input type="password" name="password" />
-
-            <button class="btn btn-primary" type="submit">Create</button>
-        </form>
+    String search = request.getParameter("search");
+    if (search != null && !search.trim().isEmpty()) {
+        search = search.trim().toLowerCase();
+        List<Member> filtered = new ArrayList<>();
+        for (Member m : members) {
+            if (m.getFullName().toLowerCase().contains(search) ||
+                    m.getPhone().contains(search) ||
+                    (m.getAddress() != null && m.getAddress().toLowerCase().contains(search))) {
+                filtered.add(m);
+            }
+        }
+        members = filtered;
+    }
+%>
+<div class="admin-container">
+    <div class="header">
+        <h1>Member Management</h1>
+        <div class="header-buttons">
+            <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>All Members</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Role</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <%
-                List<Member> members = (List<Member>) request.getAttribute("members");
-                if (members != null) {
-                    for (Member m : members) {
-            %>
+    <div class="members-section">
+        <div class="section-header">
+            <h2><i class="fas fa-users"></i> All Members</h2>
+            <a href="<%= request.getContextPath() %>/views/admin/add-member.jsp" class="add-btn">
+                <i class="fas fa-user-plus"></i> Add New Member
+            </a>
+        </div>
+
+        <form class="search-bar" method="get">
+            <input type="text" name="search" class="search-input" placeholder="Search by name, phone, or address..."
+                   value="<%= search != null ? search : "" %>">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+
+        <% if (members.isEmpty()) { %>
+        <div class="no-results">
+            <i class="fas fa-users-slash"></i>
+            <p>No members found.</p>
+        </div>
+        <% } else { %>
+        <div class="table-container">
+            <table class="members-table">
+                <thead>
                 <tr>
-                    <td><%= m.getMemberId() %></td>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% for (Member m : members) { %>
+                <tr>
+                    <td>#<%= m.getMemberId() %></td>
                     <td><%= m.getFullName() %></td>
                     <td><%= m.getPhone() %></td>
-                    <td><%= m.getAddress() == null ? "" : m.getAddress() %></td>
-                    <td><%= m.getRole() %></td>
+                    <td><%= m.getAddress() != null ? m.getAddress() : "-" %></td>
                     <td>
-                        <form class="inline" method="post" action="<%=request.getContextPath()%>/admin/members">
-                            <input type="hidden" name="action" value="delete" />
-                            <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                            <button class="btn btn-danger" type="submit">Delete</button>
-                        </form>
-
-                        <details>
-                            <summary class="link">Update</summary>
-                            <form method="post" action="<%=request.getContextPath()%>/admin/members">
-                                <input type="hidden" name="action" value="update" />
-                                <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                                <label>Full Name</label>
-                                <input type="text" name="full_name" value="<%=m.getFullName()%>" required />
-                                <label>Phone</label>
-                                <input type="text" name="phone" value="<%=m.getPhone()%>" required />
-                                <label>Address</label>
-                                <input type="text" name="address" value="<%=m.getAddress()==null?"":m.getAddress()%>" />
-                                <label>Role</label>
-                                <select name="role">
-                                    <option value="member" <%= "member".equalsIgnoreCase(m.getRole()) ? "selected" : "" %>>member</option>
-                                    <option value="admin" <%= "admin".equalsIgnoreCase(m.getRole()) ? "selected" : "" %>>admin</option>
-                                </select>
-                                <button class="btn" type="submit">Save</button>
-                            </form>
-                        </details>
-
-                        <details>
-                            <summary class="link">Reset Password</summary>
-                            <form method="post" action="<%=request.getContextPath()%>/admin/members">
-                                <input type="hidden" name="action" value="reset_password" />
-                                <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                                <label>New Password</label>
-                                <input type="password" name="password" required />
-                                <button class="btn" type="submit">Reset</button>
-                            </form>
-                        </details>
+                                <span class="role-badge <%= "admin".equalsIgnoreCase(m.getRole()) ? "admin" : "member" %>">
+                                    <%= "admin".equalsIgnoreCase(m.getRole()) ? "Administrator" : "Member" %>
+                                </span>
+                    </td>
+                    <td class="actions">
+                        <a href="<%= request.getContextPath() %>/views/admin/edit-member.jsp?id=<%= m.getMemberId() %>" class="edit-btn">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="<%= request.getContextPath() %>/delete-member?id=<%= m.getMemberId() %>" class="delete-btn"
+                           onclick="return confirm('Delete <%= m.getFullName() %>?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
                     </td>
                 </tr>
-            <%
-                    }
-                }
-            %>
-            </tbody>
-        </table>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+        <% } %>
     </div>
 </div>
 </body>

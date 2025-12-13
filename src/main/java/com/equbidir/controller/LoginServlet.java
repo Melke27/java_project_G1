@@ -17,7 +17,7 @@ import com.equbidir.model.Member;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
 
-@WebServlet("/equbidir/views/auth/login.jsp")
+@WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
     @Override
@@ -57,8 +57,14 @@ public class LoginServlet extends HttpServlet {
 
                     HttpSession session = request.getSession();
                     session.setAttribute("user", member);
-                    response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
-                }else {
+
+                    // Role-based redirection
+                    if ("admin".equalsIgnoreCase(role)) {
+                        response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+                    }
+                } else {
                     request.setAttribute("error", "Incorrect password.");
                     request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
                 }
@@ -72,9 +78,9 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("error", "Login failed. Please try again later.");
             request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
         } finally {
-            try { if (rs != null) rs.close(); } catch (SQLException e) { /* ignored */ }
-            try { if (pst != null) pst.close(); } catch (SQLException e) { /* ignored */ }
-            try { if (conn != null) conn.close(); } catch (SQLException e) { /* ignored */ }
+            try { if (rs != null) rs.close(); } catch (SQLException ignored) {}
+            try { if (pst != null) pst.close(); } catch (SQLException ignored) {}
+            try { if (conn != null) conn.close(); } catch (SQLException ignored) {}
         }
     }
 
