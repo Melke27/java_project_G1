@@ -1,27 +1,24 @@
 package com.equbidir.util;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class SecurityUtil {
 
-    private SecurityUtil() {}
-
-    public static String sha256(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            return toHex(hash);
-        } catch (Exception e) {
-            throw new RuntimeException("Hashing failed", e);
+    public static String hashPassword(String plainPassword) {
+        if (plainPassword == null || plainPassword.isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
         }
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
     }
 
-    private static String toHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
+    public static boolean checkPassword(String plainPassword, String hashedPassword) {
+        if (plainPassword == null || hashedPassword == null) {
+            return false;
         }
-        return sb.toString();
+        try {
+            return BCrypt.checkpw(plainPassword, hashedPassword);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

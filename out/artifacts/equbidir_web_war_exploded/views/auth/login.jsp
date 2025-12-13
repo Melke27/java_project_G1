@@ -14,7 +14,7 @@
         <div class="logo">Equb & Idir</div>
         <p class="tagline">Securely manage your traditional savings and community support groups</p>
         <h1>Login to Your Account</h1>
-        <form>
+        <form action="<%= request.getContextPath() %>/login" method="post">
             <div class="input-group">
                 <i class="fas fa-phone"></i>
                 <input type="tel" placeholder="Phone Number (e.g. 0911223344)" required>
