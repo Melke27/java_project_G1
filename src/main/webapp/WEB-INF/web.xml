@@ -10,11 +10,11 @@
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>com.equbidir.controller.LoginServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
+
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
         <servlet-class>com.equbidir.controller.RegisterServlet</servlet-class>
@@ -23,6 +23,7 @@
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
     </servlet-mapping>
+
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>com.equbidir.controller.LogoutServlet</servlet-class>
@@ -31,4 +32,51 @@
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
+
+    <!-- Admin dashboards -->
+    <servlet>
+        <servlet-name>AdminDashboardServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.AdminDashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminDashboardServlet</servlet-name>
+        <url-pattern>/admin/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.MemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MemberServlet</servlet-name>
+        <url-pattern>/admin/members</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EqubServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.EqubServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EqubServlet</servlet-name>
+        <url-pattern>/admin/equb</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>IdirServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.IdirServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>IdirServlet</servlet-name>
+        <url-pattern>/admin/idir</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ExpenseServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.ExpenseServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ExpenseServlet</servlet-name>
+        <url-pattern>/admin/expenses</url-pattern>
+    </servlet-mapping>
+
 </web-app>

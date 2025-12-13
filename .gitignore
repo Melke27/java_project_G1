@@ -1,0 +1,11 @@
+.idea/
+*.iml
+out/
+target/
+web2/
+META-INF/
+*.class
+
+# OS
+.DS_Store
+Thumbs.db

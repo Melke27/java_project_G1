@@ -70,7 +70,7 @@
                 <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
             </div>
             <button type="submit" class="submit-btn">Create Account</button>
-            <p class="signin-link">Already have an account? <a href="<%= request.getContextPath() %>/views/auth/login.jsp">Sign in</a></p>
+            <p class="signin-link">Already have an account? <a href="<%= request.getContextPath() %>/login">Sign in</a></p>
         </form>
     </div>
     <div class="info-section">
