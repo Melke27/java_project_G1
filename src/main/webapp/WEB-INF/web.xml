@@ -6,6 +6,9 @@
          version="4.0"
          metadata-complete="true">
 
+    <display-name>Equb &amp; Idir Management System</display-name>
+
+    <!-- Original Servlets -->
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>com.equbidir.controller.LoginServlet</servlet-class>
@@ -33,6 +36,52 @@
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
 
+<<<<<<< HEAD
+    <!-- Member Management Servlets -->
+    <servlet>
+        <servlet-name>AddMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.AddMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddMemberServlet</servlet-name>
+        <url-pattern>/admin/add-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.DeleteMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteMemberServlet</servlet-name>
+        <url-pattern>/admin/delete-member</url-pattern>
+    </servlet-mapping>
+
+    <!-- Profile Servlets -->
+    <servlet>
+        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.ProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ChangePasswordServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.ChangePasswordServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChangePasswordServlet</servlet-name>
+        <url-pattern>/change-password</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome File -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+</web-app>
+=======
     <!-- Admin dashboards -->
     <servlet>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -80,3 +129,4 @@
     </servlet-mapping>
 
 </web-app>
+>>>>>>> origin/main

@@ -6,55 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Dashboard - Equb & Idir</title>
-    <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f5f7fa;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h1 {
-            color: #1e4d2b;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: #f8fafc;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        .card p {
-            font-size: 18px;
-            margin: 15px 0;
-            color: #333;
-        }
-        .logout-btn {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 12px 30px;
-            background: #c9a227;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        .logout-btn:hover {
-            background: #b38b1e;
-            transform: translateY(-3px);
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/dashboard.css">
 </head>
 <body>
 <%
@@ -64,15 +18,58 @@
         return;
     }
 %>
-<div class="container">
-    <h1>Member Dashboard</h1>
-    <div class="card">
-        <p>Welcome back, <strong><%= user.getFullName() %></strong>!</p>
-        <p>Phone: <%= user.getPhone() %></p>
-        <p>Role: <%= user.getRole() %></p>
-        <p>Member ID: <%= user.getMemberId() %></p>
+<div class="dashboard-container">
+    <div class="header">
+        <h1>Welcome back, <%= user.getFullName() %>!</h1>
+        <div class="header-buttons">
+            <a href="<%= request.getContextPath() %>/views/member/profile.jsp" class="profile-btn">
+                <i class="fas fa-user-cog"></i> My Profile
+            </a>
+            <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
     </div>
-    <a href="<%= request.getContextPath() %>/logout" class="logout-btn">Logout</a>
+
+    <div class="grid">
+        <!-- Personal Information -->
+        <div class="card">
+            <h2><i class="fas fa-user"></i> Personal Information</h2>
+            <div class="info-item"><strong>Full Name:</strong> <%= user.getFullName() %></div>
+            <div class="info-item"><strong>Phone:</strong> <%= user.getPhone() %></div>
+            <div class="info-item"><strong>Member ID:</strong> #<%= user.getMemberId() %></div>
+            <div class="info-item"><strong>Role:</strong> <%= "admin".equalsIgnoreCase(user.getRole()) ? "Administrator" : "Member" %></div>
+        </div>
+
+        <!-- My Equb Groups -->
+        <div class="card">
+            <h2><i class="fas fa-users"></i> My Equb Groups</h2>
+            <div class="placeholder">
+                <i class="fas fa-info-circle"></i>
+                <p>No Equb groups assigned yet.<br>Contact your admin to join one.</p>
+            </div>
+        </div>
+
+        <!-- My Idir Group -->
+        <div class="card">
+            <h2><i class="fas fa-hands-helping"></i> My Idir Group</h2>
+            <div class="placeholder">
+                <i class="fas fa-info-circle"></i>
+                <p>No Idir group assigned yet.<br>Your community support will appear here.</p>
+            </div>
+        </div>
+
+        <!-- Contribution History -->
+        <div class="card">
+            <h2><i class="fas fa-history"></i> Contribution History</h2>
+            <div class="placeholder">
+                <i class="fas fa-clock"></i>
+                <p>Your payment history will be displayed here once contributions begin.</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="<%= request.getContextPath() %>/assets/js/dashboard.js"></script>
 </body>
 </html>

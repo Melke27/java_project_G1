@@ -10,6 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+<<<<<<< HEAD
+import com.equbidir.model.Member;
+import com.equbidir.util.DatabaseConnection;
+import com.equbidir.util.SecurityUtil;
+
+@WebServlet("/login")
+=======
+>>>>>>> origin/main
 public class LoginServlet extends HttpServlet {
 
     private final MemberDAO memberDAO = new MemberDAO();
@@ -28,9 +36,44 @@ public class LoginServlet extends HttpServlet {
         }
 
         try {
+<<<<<<< HEAD
+            conn = DatabaseConnection.getConnection();
+
+            String sql = "SELECT member_id, full_name, password_hash, role FROM members WHERE phone = ?";
+            pst = conn.prepareStatement(sql);
+            pst.setString(1, phone.trim());
+
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                String storedHash = rs.getString("password_hash");
+                String fullName = rs.getString("full_name");
+                String role = rs.getString("role");
+                int memberId = rs.getInt("member_id");
+
+                if (SecurityUtil.checkPassword(password, storedHash)) {
+                    Member member = new Member(memberId, fullName, phone.trim(), "", role);
+
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user", member);
+
+                    // Role-based redirection
+                    if ("admin".equalsIgnoreCase(role)) {
+                        response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+                    }
+                } else {
+                    request.setAttribute("error", "Incorrect password.");
+                    request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
+                }
+            } else {
+                request.setAttribute("error", "No account found with this phone number.");
+=======
             Member member = memberDAO.authenticate(phone.trim(), password);
             if (member == null) {
                 request.setAttribute("error", "Incorrect phone number or password.");
+>>>>>>> origin/main
                 request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
                 return;
             }
@@ -48,6 +91,13 @@ public class LoginServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Login failed. Please try again later.");
             request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
+<<<<<<< HEAD
+        } finally {
+            try { if (rs != null) rs.close(); } catch (SQLException ignored) {}
+            try { if (pst != null) pst.close(); } catch (SQLException ignored) {}
+            try { if (conn != null) conn.close(); } catch (SQLException ignored) {}
+=======
+>>>>>>> origin/main
         }
     }
 

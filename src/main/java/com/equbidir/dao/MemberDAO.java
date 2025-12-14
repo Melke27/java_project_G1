@@ -2,6 +2,7 @@ package com.equbidir.dao;
 
 import com.equbidir.model.Member;
 import com.equbidir.util.DatabaseConnection;
+import com.equbidir.util.SecurityUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class MemberDAO {
                 if (rs.next()) {
                     String storedHash = rs.getString("password_hash");
 
-                    if (com.equbidir.util.SecurityUtil.checkPassword(plainPassword, storedHash)) {
+                    if (SecurityUtil.checkPassword(plainPassword, storedHash)) {
                         return new Member(
                                 rs.getInt("member_id"),
                                 rs.getString("full_name"),
@@ -61,7 +62,7 @@ public class MemberDAO {
             return false;
         }
 
-        String hashedPassword = com.equbidir.util.SecurityUtil.hashPassword(plainPassword);
+        String hashedPassword = SecurityUtil.hashPassword(plainPassword);
 
         String sql = "INSERT INTO members (full_name, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?)";
 
@@ -116,7 +117,7 @@ public class MemberDAO {
     }
 
     public boolean resetPassword(int memberId, String newPlainPassword) throws SQLException {
-        String hashed = com.equbidir.util.SecurityUtil.hashPassword(newPlainPassword);
+        String hashed = SecurityUtil.hashPassword(newPlainPassword);
         String sql = "UPDATE members SET password_hash = ? WHERE member_id = ?";
 
         try (Connection con = DatabaseConnection.getConnection();
@@ -137,5 +138,38 @@ public class MemberDAO {
             ps.setInt(1, memberId);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    // NEW: Verify current password for change password feature
+    public boolean verifyCurrentPassword(int memberId, String plainPassword) throws SQLException {
+        String sql = "SELECT password_hash FROM members WHERE member_id = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String storedHash = rs.getString("password_hash");
+                    return SecurityUtil.checkPassword(plainPassword, storedHash);
+                }
+            }
+        }
+        return false;
+    }
+
+    // NEW: Get member with password hash (alternative if needed)
+    public String getPasswordHash(int memberId) throws SQLException {
+        String sql = "SELECT password_hash FROM members WHERE member_id = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("password_hash");
+                }
+            }
+        }
+        return null;
     }
 }

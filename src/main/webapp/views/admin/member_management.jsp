@@ -1,114 +1,113 @@
-<%@ page import="java.util.List" %>
 <%@ page import="com.equbidir.model.Member" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Member Management</title>
-    <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Member - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/admin-dashboard.css">
 </head>
 <body>
-<div class="container">
-    <h1>Member Management</h1>
-    <a class="link" href="<%=request.getContextPath()%>/admin/dashboard">← Back to Dashboard</a>
+
+<%
+    Member currentUser = (Member) session.getAttribute("user");
+    if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+        return;
+    }
+
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    session.removeAttribute("message");
+    session.removeAttribute("error");
+%>
+
+<div class="dashboard-container">
+    <div class="header">
+        <h1>Add New Member</h1>
+        <div class="header-buttons">
+            <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp" class="profile-btn">
+                <i class="fas fa-tachometer-alt"></i> Back to Dashboard
+            </a>
+            <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <% if (message != null) { %>
+    <div style="background:#d4edda;color:#155724;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #c3e6cb;font-weight:600;">
+        <i class="fas fa-check-circle fa-lg" style="margin-right:10px;"></i>
+        <%= message %>
+    </div>
+    <% } %>
+
+    <% if (error != null) { %>
+    <div style="background:#f8d7da;color:#721c24;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #f5c6cb;font-weight:600;">
+        <i class="fas fa-exclamation-circle fa-lg" style="margin-right:10px;"></i>
+        <%= error %>
+    </div>
+    <% } %>
 
     <div class="card">
-        <h2>Add Member</h2>
-        <form method="post" action="<%=request.getContextPath()%>/admin/members">
-            <input type="hidden" name="action" value="create" />
-            <label>Full Name</label>
-            <input type="text" name="full_name" required />
+        <h2><i class="fas fa-user-plus"></i> Member Registration Form</h2>
 
-            <label>Phone</label>
-            <input type="text" name="phone" required />
+        <form action="<%= request.getContextPath() %>/admin/add-member" method="post" style="margin-top: 30px;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-user"></i> Full Name <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="fullName" required
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Enter full name">
+            </div>
 
-            <label>Address</label>
-            <input type="text" name="address" />
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-phone"></i> Phone Number <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="phone" required
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="e.g. 0911223344">
+            </div>
 
-            <label>Role</label>
-            <select name="role">
-                <option value="member">member</option>
-                <option value="admin">admin</option>
-            </select>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-map-marker-alt"></i> Address (Optional)
+                </label>
+                <input type="text" name="address"
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Enter residential address">
+            </div>
 
-            <label>Password (optional, default 123456)</label>
-            <input type="password" name="password" />
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-lock"></i> Initial Password <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="password" required value="changeme"
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Set a secure password">
+                <small style="color: #666; font-size: 14px; display: block; margin-top: 6px;">
+                    Default: <strong>changeme</strong> — you can change it here. Member can update it later.
+                </small>
+            </div>
 
-            <button class="btn btn-primary" type="submit">Create</button>
+            <div style="text-align: right;">
+                <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp"
+                   style="margin-right: 15px; color: #666; text-decoration: none; font-weight: 500;">
+                    Cancel
+                </a>
+                <button type="submit" class="profile-btn" style="padding: 14px 32px; font-size: 16px; border: none; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Member
+                </button>
+            </div>
         </form>
     </div>
-
-    <div class="card">
-        <h2>All Members</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Role</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <%
-                List<Member> members = (List<Member>) request.getAttribute("members");
-                if (members != null) {
-                    for (Member m : members) {
-            %>
-                <tr>
-                    <td><%= m.getMemberId() %></td>
-                    <td><%= m.getFullName() %></td>
-                    <td><%= m.getPhone() %></td>
-                    <td><%= m.getAddress() == null ? "" : m.getAddress() %></td>
-                    <td><%= m.getRole() %></td>
-                    <td>
-                        <form class="inline" method="post" action="<%=request.getContextPath()%>/admin/members">
-                            <input type="hidden" name="action" value="delete" />
-                            <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                            <button class="btn btn-danger" type="submit">Delete</button>
-                        </form>
-
-                        <details>
-                            <summary class="link">Update</summary>
-                            <form method="post" action="<%=request.getContextPath()%>/admin/members">
-                                <input type="hidden" name="action" value="update" />
-                                <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                                <label>Full Name</label>
-                                <input type="text" name="full_name" value="<%=m.getFullName()%>" required />
-                                <label>Phone</label>
-                                <input type="text" name="phone" value="<%=m.getPhone()%>" required />
-                                <label>Address</label>
-                                <input type="text" name="address" value="<%=m.getAddress()==null?"":m.getAddress()%>" />
-                                <label>Role</label>
-                                <select name="role">
-                                    <option value="member" <%= "member".equalsIgnoreCase(m.getRole()) ? "selected" : "" %>>member</option>
-                                    <option value="admin" <%= "admin".equalsIgnoreCase(m.getRole()) ? "selected" : "" %>>admin</option>
-                                </select>
-                                <button class="btn" type="submit">Save</button>
-                            </form>
-                        </details>
-
-                        <details>
-                            <summary class="link">Reset Password</summary>
-                            <form method="post" action="<%=request.getContextPath()%>/admin/members">
-                                <input type="hidden" name="action" value="reset_password" />
-                                <input type="hidden" name="member_id" value="<%=m.getMemberId()%>" />
-                                <label>New Password</label>
-                                <input type="password" name="password" required />
-                                <button class="btn" type="submit">Reset</button>
-                            </form>
-                        </details>
-                    </td>
-                </tr>
-            <%
-                    }
-                }
-            %>
-            </tbody>
-        </table>
-    </div>
 </div>
+
 </body>
 </html>
