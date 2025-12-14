@@ -6,9 +6,9 @@ body {
     min-height: 100vh;
 }
 
-.admin-container {
+.dashboard-container {
     max-width: 1200px;
-    margin: 30px auto;
+    margin: 40px auto;
     padding: 20px;
 }
 
@@ -17,7 +17,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: white;
-    padding: 25px 30px;
+    padding: 20px 30px;
     border-radius: 16px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     margin-bottom: 30px;
@@ -26,16 +26,17 @@ body {
 .header h1 {
     color: #1e4d2b;
     margin: 0;
-    font-size: 32px;
+    font-size: 28px;
 }
 
 .header-buttons {
     display: flex;
-    gap: 15px;
+    gap: 12px;
+    align-items: center;
 }
 
 .profile-btn, .logout-btn {
-    padding: 12px 24px;
+    padding: 10px 24px;
     border-radius: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -50,6 +51,7 @@ body {
 .profile-btn:hover {
     background: #163822;
     transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(30, 77, 43, 0.3);
 }
 
 .logout-btn {
@@ -62,173 +64,100 @@ body {
     transform: translateY(-2px);
 }
 
-.stats-grid {
+.grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
     margin-bottom: 40px;
 }
 
-.stat-card {
+.card {
     background: white;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    text-align: center;
-}
-
-.stat-card h3 {
-    color: #1e4d2b;
-    margin: 0 0 15px 0;
-    font-size: 18px;
-}
-
-.stat-number {
-    font-size: 36px;
-    font-weight: 700;
-    color: #1e4d2b;
-    margin: 0;
-}
-
-.placeholder {
-    color: #888;
-    font-style: italic;
-}
-
-.members-section {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+.card:hover {
+    transform: translateY(-8px);
 }
 
-.section-header h2 {
+.card h2 {
     color: #1e4d2b;
-    margin: 0;
-    font-size: 24px;
+    margin-top: 0;
+    font-size: 22px;
+    border-bottom: 2px solid #c9a227;
+    padding-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.add-btn {
-    padding: 12px 24px;
-    background: #1e4d2b;
-    color: white;
-    text-decoration: none;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.add-btn:hover {
-    background: #163822;
-    transform: translateY(-2px);
-}
-
-.placeholder-card {
-    text-align: center;
-    padding: 60px 20px;
+.placeholder {
     color: #888;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-top: 20px;
 }
 
-.placeholder-card i {
-    font-size: 60px;
-    margin-bottom: 20px;
+.placeholder i {
+    font-size: 48px;
+    margin-bottom: 15px;
     color: #c9a227;
 }
 
-.table-container {
-    overflow-x: auto;
-}
-
+/* Table Styles */
 .members-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
-.members-table th, .members-table td {
+.members-table th {
+    background: #1e4d2b;
+    color: white;
     padding: 15px;
     text-align: left;
+}
+
+.members-table td {
+    padding: 15px;
     border-bottom: 1px solid #eee;
 }
 
-.members-table th {
+.members-table tr:hover {
     background: #f8fafc;
-    color: #1e4d2b;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 14px;
 }
 
 .role-badge {
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
 }
 
 .role-badge.admin {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #e74c3c;
+    color: white;
 }
 
 .role-badge.member {
-    background: #fff3cd;
-    color: #856404;
+    background: #3498db;
+    color: white;
 }
 
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.edit-btn, .delete-btn {
-    padding: 8px 12px;
-    border-radius: 8px;
+.actions a {
+    margin: 0 10px;
+    font-size: 18px;
     text-decoration: none;
-    transition: all 0.3s;
 }
 
-.edit-btn {
-    background: #1e4d2b;
-    color: white;
-}
+.edit-btn { color: #f39c12; }
+.edit-btn:hover { color: #e67e22; }
 
-.edit-btn:hover {
-    background: #163822;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-}
-
-.delete-btn:hover {
-    background: #c82333;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    .members-table {
-        font-size: 14px;
-    }
-}
+.delete-btn { color: #e74c3c; }
+.delete-btn:hover { color: #c0392b; }

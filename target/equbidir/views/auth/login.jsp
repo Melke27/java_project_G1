@@ -52,7 +52,6 @@
                 <input type="password" name="password" placeholder="Password" required>
             </div>
             <button type="submit" class="submit-btn">Sign In</button>
-            <p class="signin-link">Don't have an account? <a href="<%= request.getContextPath() %>/views/auth/create.jsp">Sign up</a></p>
         </form>
     </div>
     <div class="info-section">

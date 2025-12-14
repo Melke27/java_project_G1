@@ -1,49 +1,37 @@
 <%@ page import="com.equbidir.model.Member" %>
-<%@ page import="com.equbidir.dao.MemberDAO" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Management - Equb & Idir Admin</title>
+    <title>Add New Member - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/admin-dashboard.css">
 </head>
 <body>
+
 <%
-    Member admin = (Member) session.getAttribute("user");
-    if (admin == null || !"admin".equalsIgnoreCase(admin.getRole())) {
+    Member currentUser = (Member) session.getAttribute("user");
+    if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
         response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
         return;
     }
 
-    MemberDAO memberDAO = new MemberDAO();
-    List<Member> members = memberDAO.getAllMembers();
-
-    String search = request.getParameter("search");
-    if (search != null && !search.trim().isEmpty()) {
-        search = search.trim().toLowerCase();
-        List<Member> filtered = new ArrayList<>();
-        for (Member m : members) {
-            if (m.getFullName().toLowerCase().contains(search) ||
-                    m.getPhone().contains(search) ||
-                    (m.getAddress() != null && m.getAddress().toLowerCase().contains(search))) {
-                filtered.add(m);
-            }
-        }
-        members = filtered;
-    }
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    session.removeAttribute("message");
+    session.removeAttribute("error");
 %>
-<div class="admin-container">
+
+<div class="dashboard-container">
     <div class="header">
-        <h1>Member Management</h1>
+        <h1>Add New Member</h1>
         <div class="header-buttons">
-            <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp" class="profile-btn">
+                <i class="fas fa-tachometer-alt"></i> Back to Dashboard
             </a>
             <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
@@ -51,68 +39,75 @@
         </div>
     </div>
 
-    <div class="members-section">
-        <div class="section-header">
-            <h2><i class="fas fa-users"></i> All Members</h2>
-            <a href="<%= request.getContextPath() %>/views/admin/add-member.jsp" class="add-btn">
-                <i class="fas fa-user-plus"></i> Add New Member
-            </a>
-        </div>
+    <% if (message != null) { %>
+    <div style="background:#d4edda;color:#155724;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #c3e6cb;font-weight:600;">
+        <i class="fas fa-check-circle fa-lg" style="margin-right:10px;"></i>
+        <%= message %>
+    </div>
+    <% } %>
 
-        <form class="search-bar" method="get">
-            <input type="text" name="search" class="search-input" placeholder="Search by name, phone, or address..."
-                   value="<%= search != null ? search : "" %>">
-            <button type="submit" class="search-btn">
-                <i class="fas fa-search"></i> Search
-            </button>
+    <% if (error != null) { %>
+    <div style="background:#f8d7da;color:#721c24;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #f5c6cb;font-weight:600;">
+        <i class="fas fa-exclamation-circle fa-lg" style="margin-right:10px;"></i>
+        <%= error %>
+    </div>
+    <% } %>
+
+    <div class="card">
+        <h2><i class="fas fa-user-plus"></i> Member Registration Form</h2>
+
+        <form action="<%= request.getContextPath() %>/admin/add-member" method="post" style="margin-top: 30px;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-user"></i> Full Name <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="fullName" required
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Enter full name">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-phone"></i> Phone Number <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="phone" required
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="e.g. 0911223344">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-map-marker-alt"></i> Address (Optional)
+                </label>
+                <input type="text" name="address"
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Enter residential address">
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e4d2b;">
+                    <i class="fas fa-lock"></i> Initial Password <span style="color: red;">*</span>
+                </label>
+                <input type="text" name="password" required value="changeme"
+                       style="width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px;"
+                       placeholder="Set a secure password">
+                <small style="color: #666; font-size: 14px; display: block; margin-top: 6px;">
+                    Default: <strong>changeme</strong> — you can change it here. Member can update it later.
+                </small>
+            </div>
+
+            <div style="text-align: right;">
+                <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp"
+                   style="margin-right: 15px; color: #666; text-decoration: none; font-weight: 500;">
+                    Cancel
+                </a>
+                <button type="submit" class="profile-btn" style="padding: 14px 32px; font-size: 16px; border: none; cursor: pointer;">
+                    <i class="fas fa-save"></i> Save Member
+                </button>
+            </div>
         </form>
-
-        <% if (members.isEmpty()) { %>
-        <div class="no-results">
-            <i class="fas fa-users-slash"></i>
-            <p>No members found.</p>
-        </div>
-        <% } else { %>
-        <div class="table-container">
-            <table class="members-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Full Name</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <% for (Member m : members) { %>
-                <tr>
-                    <td>#<%= m.getMemberId() %></td>
-                    <td><%= m.getFullName() %></td>
-                    <td><%= m.getPhone() %></td>
-                    <td><%= m.getAddress() != null ? m.getAddress() : "-" %></td>
-                    <td>
-                                <span class="role-badge <%= "admin".equalsIgnoreCase(m.getRole()) ? "admin" : "member" %>">
-                                    <%= "admin".equalsIgnoreCase(m.getRole()) ? "Administrator" : "Member" %>
-                                </span>
-                    </td>
-                    <td class="actions">
-                        <a href="<%= request.getContextPath() %>/views/admin/edit-member.jsp?id=<%= m.getMemberId() %>" class="edit-btn">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="<%= request.getContextPath() %>/delete-member?id=<%= m.getMemberId() %>" class="delete-btn"
-                           onclick="return confirm('Delete <%= m.getFullName() %>?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-                <% } %>
-                </tbody>
-            </table>
-        </div>
-        <% } %>
     </div>
 </div>
+
 </body>
 </html>
