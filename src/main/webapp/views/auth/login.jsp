@@ -52,6 +52,10 @@
                 <input type="password" name="password" placeholder="Password" required>
             </div>
             <button type="submit" class="submit-btn">Sign In</button>
+<<<<<<< HEAD
+=======
+            <p class="signin-link">Don't have an account? <a href="<%= request.getContextPath() %>/register">Sign up</a></p>
+>>>>>>> origin/main
         </form>
     </div>
     <div class="info-section">
