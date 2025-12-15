@@ -333,8 +333,20 @@
     String labelLogout = isAm ? "ውጣ" : "Logout";
 
     String dashboardPath = "admin".equalsIgnoreCase(user.getRole())
-            ? "/admin/dashboard"
-            : "/member/dashboard";
+            ? "/views/admin/dashboard.jsp"
+            : "/views/member/dashboard.jsp";
+
+    String success = (String) request.getAttribute("success");
+    String error = (String) request.getAttribute("error");
+    String passwordSuccess = (String) request.getAttribute("passwordSuccess");
+    String passwordError = (String) request.getAttribute("passwordError");
+
+    String activeTab = "personal";
+    if (passwordSuccess != null || passwordError != null) {
+        activeTab = "password";
+    } else if (success != null || error != null) {
+        activeTab = "personal";
+    }
 %>
 
 <!-- Dark Overlay -->
@@ -351,7 +363,7 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/views/member/dashboard.jsp"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/admin/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= ctx %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp" class="active"><i class="fas fa-user"></i> <%= labelProfile %></a></li>

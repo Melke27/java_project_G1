@@ -199,6 +199,7 @@
             border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             transition: transform 0.3s;
+            margin-top: 20px;
         }
         .card:hover {
             transform: translateY(-8px);
@@ -450,113 +451,122 @@
     </div>
     <% } %>
 
-    <div class="grid">
-        <div class="card">
+    <div class="grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+
+        <div class="card" style="background:#e0f2f1; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-users"></i> <%= labelTotalMembers %></h2>
-            <p class="info-item"><%= regularMembersTotal %></p>
+            <p class="info-item" style="font-size:24px; font-weight:700;"><%= regularMembersTotal %></p>
         </div>
 
-        <div class="card">
+        <div class="card" style="background:#f1f8e9; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-handshake"></i> <%= labelActiveEqub %></h2>
-            <p class="info-item"><%= equbGroupsCount %></p>
+            <p class="info-item" style="font-size:24px; font-weight:700;"><%= equbGroupsCount %></p>
         </div>
 
-        <div class="card">
+        <div class="card" style="background:#fff3e0; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-heart"></i> <%= labelActiveIdir %></h2>
-            <p class="info-item"><%= idirGroupsCount %></p>
+            <p class="info-item" style="font-size:24px; font-weight:700;"><%= idirGroupsCount %></p>
         </div>
 
-        <div class="card">
+        <div class="card" style="background:#ede7f6; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-money-bill-wave"></i> <%= labelEqubUnpaid %></h2>
-            <p class="info-item"><%= equbUnpaidCount %></p>
+            <p class="info-item" style="font-size:24px; font-weight:700;"><%= equbUnpaidCount %></p>
         </div>
 
-        <div class="card">
+        <div class="card" style="background:#fffde7; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-money-check-dollar"></i> <%= labelIdirUnpaid %></h2>
-            <p class="info-item"><%= idirUnpaidCount %></p>
+            <p class="info-item" style="font-size:24px; font-weight:700;"><%= idirUnpaidCount %></p>
         </div>
 
-        <div class="card">
+        <div class="card" style="background:#fbe9e7; padding:20px; border-radius:12px; text-align:center;">
             <h2><i class="fas fa-receipt"></i> <%= labelIdirExpensesTotal %></h2>
-            <div style="text-align:center; margin-top: 10px;">
-                <div class="info-item" style="font-size:28px;"><%= String.format("%.2f", idirExpensesTotal) %></div>
+            <div style="margin-top:10px;">
+                <div class="info-item" style="font-size:28px; font-weight:700;"><%= String.format("%.2f", idirExpensesTotal) %></div>
                 <div style="color:#666; font-weight:600;"><%= labelIdirExpensesCount %>: <%= idirExpensesCount %></div>
             </div>
         </div>
+
     </div>
 
+
     <!-- Notifications -->
-    <div class="card" id="notifications">
-        <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
+    <div style="display:flex; gap:20px; align-items:stretch; flex-wrap:wrap;">
 
-        <div style="margin-top: 12px;">
-            <form method="post" action="<%= ctx %>/admin/notifications" style="display:flex; flex-direction:column; gap: 10px;">
-                <input type="text" name="title" placeholder="<%= isAm ? "ርዕስ" : "Title" %>" required
-                       style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;" />
-                <textarea name="message" rows="3" placeholder="<%= isAm ? "መልዕክት" : "Message" %>" required
-                          style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px; resize: vertical;"></textarea>
-                <button type="submit" style="align-self:flex-start; padding:12px 18px; background:#1e4d2b; color:white; border:none; border-radius:999px; font-weight:700; cursor:pointer;">
-                    <i class="fas fa-paper-plane"></i> <%= labelPostNotification %>
-                </button>
-            </form>
-        </div>
+        <div class="card" id="notifications" style="flex:1; display:flex; flex-direction:column;">
+            <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
 
-        <div style="margin-top: 18px;">
-            <div style="font-weight:800; color:#1e4d2b; margin-bottom: 10px;">
-                <%= isAm ? "የቅርብ ጊዜ ማስታወቂያዎች" : "Recent notifications" %>
+            <div style="margin-top: 12px;">
+                <form method="post" action="<%= ctx %>/admin/notifications" style="display:flex; flex-direction:column; gap: 10px;">
+                    <input type="text" name="title" placeholder="<%= isAm ? "ርዕስ" : "Title" %>" required
+                           style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;" />
+                    <textarea name="message" rows="3" placeholder="<%= isAm ? "መልዕክት" : "Message" %>" required
+                              style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px; resize: vertical;"></textarea>
+                    <button type="submit" style="align-self:flex-start; padding:12px 18px; background:#1e4d2b; color:white; border:none; border-radius:999px; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-paper-plane"></i> <%= labelPostNotification %>
+                    </button>
+                </form>
             </div>
 
-            <% if (notifications.isEmpty()) { %>
-            <div class="placeholder">
-                <i class="fas fa-envelope-open-text"></i>
-                <p><%= isAm ? "ምንም ማስታወቂያ የለም።" : "No notifications posted yet." %></p>
-            </div>
-            <% } else { %>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <% for (Notification n : notifications) { %>
-                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
-                    <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
-                    <div style="color:#666; margin-top:6px;"><%= n.getMessage() %></div>
-                    <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
-                        <%= n.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+            <div style="margin-top: 18px; flex:1;">
+                <div style="font-weight:800; color:#1e4d2b; margin-bottom: 10px;">
+                    <%= isAm ? "የቅርብ ጊዜ ማስታወቂያዎች" : "Recent notifications" %>
+                </div>
+
+                <% if (notifications.isEmpty()) { %>
+                <div class="placeholder">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <p><%= isAm ? "ምንም ማስታወቂያ የለም።" : "No notifications posted yet." %></p>
+                </div>
+                <% } else { %>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <% for (Notification n : notifications) { %>
+                    <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                        <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
+                        <div style="color:#666; margin-top:6px;"><%= n.getMessage() %></div>
+                        <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                            <%= n.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+                        </div>
                     </div>
+                    <% } %>
                 </div>
                 <% } %>
             </div>
-            <% } %>
         </div>
-    </div>
 
-    <!-- Messages from Members -->
-    <div class="card" id="memberMessages">
-        <h2><i class="fas fa-comments"></i> <%= isAm ? "የአባላት መልዕክቶች" : "Messages from Members" %></h2>
+        <div class="card" id="memberMessages" style="flex:1; display:flex; flex-direction:column;">
+            <h2><i class="fas fa-comments"></i> <%= isAm ? "የአባላት መልዕክቶች" : "Messages from Members" %></h2>
 
-        <% if (memberMessages.isEmpty()) { %>
-        <div class="placeholder">
-            <i class="fas fa-inbox"></i>
-            <p><%= isAm ? "ምንም መልዕክት የለም።" : "No messages yet." %></p>
-        </div>
-        <% } else { %>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            <% for (MemberMessage mm : memberMessages) { %>
-            <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
-                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                    <div style="font-weight:900; color:#1e4d2b;"><%= mm.getTitle() %></div>
-                    <div style="color:#666; font-size:13px; font-weight:700;">
-                        <%= mm.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(mm.getCreatedAt()) : "" %>
+            <div style="flex:1;">
+                <% if (memberMessages.isEmpty()) { %>
+                <div class="placeholder">
+                    <i class="fas fa-inbox"></i>
+                    <p><%= isAm ? "ምንም መልዕክት የለም።" : "No messages yet." %></p>
+                </div>
+                <% } else { %>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <% for (MemberMessage mm : memberMessages) { %>
+                    <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                            <div style="font-weight:900; color:#1e4d2b;"><%= mm.getTitle() %></div>
+                            <div style="color:#666; font-size:13px; font-weight:700;">
+                                <%= mm.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(mm.getCreatedAt()) : "" %>
+                            </div>
+                        </div>
+                        <div style="color:#666; margin-top:6px;">
+                            <%= mm.getMessage() %>
+                        </div>
+                        <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                            <%= isAm ? "ከ" : "From" %>: <%= mm.getSenderName() %> (<%= mm.getSenderPhone() %>)
+                        </div>
                     </div>
+                    <% } %>
                 </div>
-                <div style="color:#666; margin-top:6px;">
-                    <%= mm.getMessage() %>
-                </div>
-                <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
-                    <%= isAm ? "ከ" : "From" %>: <%= mm.getSenderName() %> (<%= mm.getSenderPhone() %>)
-                </div>
+                <% } %>
             </div>
-            <% } %>
         </div>
-        <% } %>
+
     </div>
+
 
     <!-- Member Management Card -->
     <div class="card" id="memberManagement">
@@ -659,24 +669,34 @@
                 <tbody>
                 <tr>
                     <%
+                        // Empty cells before the first day of the month
                         for (int i = 1; i < firstDayOfWeek; i++) {
-                            out.print("<td></td>");
+                    %>
+                    <td></td>
+                    <%
                         }
+
+                        // Print the days of the month
                         for (int day = 1; day <= daysInMonth; day++) {
                             String dayClass = (day == currentDay) ? "today" : "";
                     %>
                     <td class="<%= dayClass %>"><%= day %></td>
                     <%
-                            if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
-                                out.print("</tr><tr>");
+                        // Start new row after Saturday (every 7 cells)
+                        if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
+                    %>
+                </tr><tr>
+                    <%
                             }
                         }
 
-                        // Fill remaining empty cells so the last week row is complete
+                        // Fill remaining empty cells in the last row
                         int usedCells = (firstDayOfWeek - 1) + daysInMonth;
-                        int trailing = (7 - (usedCells % 7)) % 7;
-                        for (int t = 0; t < trailing; t++) {
-                            out.print("<td></td>");
+                        int trailingEmpty = (7 - (usedCells % 7)) % 7;
+                        for (int t = 0; t < trailingEmpty; t++) {
+                    %>
+                    <td></td>
+                    <%
                         }
                     %>
                 </tr>

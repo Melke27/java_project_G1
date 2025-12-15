@@ -101,7 +101,7 @@
     <h2>Equb & Idir</h2>
   </div>
   <ul class="sidebar-menu">
-    <li><a href="<%= request.getContextPath() %>/views/member/dashboard.jsp"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+    <li><a href="<%= request.getContextPath() %>/admin/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
     <li><a href="<%= request.getContextPath() %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
     <li><a href="<%= request.getContextPath() %>/member/idir-details" class="active"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
     <li><a href="<%= request.getContextPath() %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>

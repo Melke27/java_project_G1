@@ -287,7 +287,7 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/views/member/dashboard.jsp" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/admin/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= ctx %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>

@@ -100,19 +100,12 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-<<<<<<< HEAD
-        <li><a href="<%= request.getContextPath() %>/views/member/dashboard.jsp"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= request.getContextPath() %>/admin/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/equb-details" class="active"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= request.getContextPath() %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/contribution-history"><i class="fas fa-history"></i> <%= labelHistoryTitle %></a></li>
         <li><a href="<%= request.getContextPath() %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
-=======
-        <li><a href="<%= ctx %>/member/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
-        <li><a href="<%= ctx %>/member/equb-details" class="active"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
-        <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
-        <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
->>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
     </ul>
 
     <div class="lang-selector">
