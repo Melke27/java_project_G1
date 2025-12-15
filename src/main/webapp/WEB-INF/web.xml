@@ -101,6 +101,33 @@
         <url-pattern>/admin/delete-member</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>EditMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.EditMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EditMemberServlet</servlet-name>
+        <url-pattern>/admin/edit-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>UpdateMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.UpdateMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateMemberServlet</servlet-name>
+        <url-pattern>/admin/update-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminSettingsServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.AdminSettingsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminSettingsServlet</servlet-name>
+        <url-pattern>/admin/settings</url-pattern>
+    </servlet-mapping>
+
     <!-- Profile Servlets -->
     <servlet>
         <servlet-name>ProfileServlet</servlet-name>

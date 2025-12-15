@@ -100,6 +100,84 @@ public class MemberDAO {
         return null;
     }
 
+    public Member getMemberById(int memberId) throws SQLException {
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE member_id = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public int countRegularMembers(String search) throws SQLException {
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        String base = "SELECT COUNT(*) FROM members WHERE (role IS NULL OR LOWER(role) <> 'admin')";
+        String sql = hasSearch ? base + " AND (LOWER(full_name) LIKE ? OR LOWER(phone) LIKE ?)" : base;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            if (hasSearch) {
+                String s = "%" + search.trim().toLowerCase() + "%";
+                ps.setString(1, s);
+                ps.setString(2, s);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public List<Member> getRegularMembers(String search, int offset, int limit) throws SQLException {
+        List<Member> members = new ArrayList<>();
+
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        String base = "SELECT member_id, full_name, phone, address, role FROM members WHERE (role IS NULL OR LOWER(role) <> 'admin')";
+        String orderLimit = " ORDER BY full_name ASC LIMIT ? OFFSET ?";
+        String sql = hasSearch
+                ? base + " AND (LOWER(full_name) LIKE ? OR LOWER(phone) LIKE ?)" + orderLimit
+                : base + orderLimit;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            int idx = 1;
+            if (hasSearch) {
+                String s = "%" + search.trim().toLowerCase() + "%";
+                ps.setString(idx++, s);
+                ps.setString(idx++, s);
+            }
+            ps.setInt(idx++, limit);
+            ps.setInt(idx, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    members.add(new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    ));
+                }
+            }
+        }
+        return members;
+    }
+
     public boolean updateMember(Member member) throws SQLException {
         String sql = "UPDATE members SET full_name = ?, phone = ?, address = ?, role = ? WHERE member_id = ?";
 

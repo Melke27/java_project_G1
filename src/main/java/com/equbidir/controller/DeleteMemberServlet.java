@@ -29,7 +29,7 @@ public class DeleteMemberServlet extends HttpServlet {
 
         if (idParam == null || idParam.isEmpty()) {
             session.setAttribute("error", "Invalid member ID.");
-            response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
         }
 
@@ -38,7 +38,7 @@ public class DeleteMemberServlet extends HttpServlet {
 
             if (memberId == currentUser.getMemberId()) {
                 session.setAttribute("error", "You cannot delete your own admin account.");
-                response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
                 return;
             }
 
@@ -56,7 +56,7 @@ public class DeleteMemberServlet extends HttpServlet {
             session.setAttribute("error", "Error deleting member.");
         }
 
-        response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.equbidir.controller;
 
 import com.equbidir.dao.DashboardDAO;
+import com.equbidir.dao.MemberDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +15,7 @@ import java.io.IOException;
 public class AdminDashboardServlet extends HttpServlet {
 
     private final DashboardDAO dashboardDAO = new DashboardDAO();
+    private final MemberDAO memberDAO = new MemberDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -24,7 +26,25 @@ public class AdminDashboardServlet extends HttpServlet {
             return;
         }
 
+        String search = request.getParameter("q");
+
+        int page = 1;
+        int size = 10;
         try {
+            if (request.getParameter("page") != null) {
+                page = Integer.parseInt(request.getParameter("page"));
+            }
+            if (request.getParameter("size") != null) {
+                size = Integer.parseInt(request.getParameter("size"));
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        if (page < 1) page = 1;
+        if (size < 5) size = 5;
+        if (size > 50) size = 50;
+
+        try {
+            // Stats
             request.setAttribute("membersCount", dashboardDAO.countMembers());
             request.setAttribute("equbGroupsCount", dashboardDAO.countEqubGroups());
             request.setAttribute("idirGroupsCount", dashboardDAO.countIdirGroups());
@@ -32,8 +52,22 @@ public class AdminDashboardServlet extends HttpServlet {
             request.setAttribute("idirUnpaidCount", dashboardDAO.countIdirUnpaidMembers());
             request.setAttribute("idirExpensesCount", dashboardDAO.countIdirExpenses());
             request.setAttribute("idirExpensesTotal", dashboardDAO.totalIdirExpensesAmount());
+
+            // Members list (non-admin only)
+            int totalRegular = memberDAO.countRegularMembers(search);
+            int totalPages = (int) Math.ceil(totalRegular / (double) size);
+            if (totalPages == 0) totalPages = 1;
+            if (page > totalPages) page = totalPages;
+
+            request.setAttribute("regularMembers", memberDAO.getRegularMembers(search, (page - 1) * size, size));
+            request.setAttribute("regularMembersTotal", totalRegular);
+            request.setAttribute("page", page);
+            request.setAttribute("size", size);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("q", search);
+
         } catch (Exception e) {
-            // Keep the dashboard working even if DB is not configured yet.
+            // Keep the dashboard page rendering even if DB is not configured yet.
             request.setAttribute("dashboardError", "Dashboard stats unavailable: " + e.getMessage());
         }
 

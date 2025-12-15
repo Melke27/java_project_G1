@@ -4,6 +4,9 @@
 <html>
 <head>
     <title>Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin-dashboard.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body>
@@ -21,23 +24,16 @@
     String labelIdir = isAm ? "እድር" : "Idir";
     String labelExpenses = isAm ? "ወጪዎች" : "Expenses";
     String labelReports = isAm ? "ሪፖርቶች" : "Reports";
+    String labelMyProfile = isAm ? "የግል መረጃዬ" : "My Profile";
+    String labelLogout = isAm ? "ውጣ" : "Logout";
+
+    request.setAttribute("activePage", "expenses.reports");
 %>
 
-<div class="admin-nav">
-    <div class="lang-switch">
-        <span><%= labelLanguage %>:</span>
-        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a>|
-        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
-    </div>
-    <a href="<%= ctx %>/admin/dashboard"><%= labelDashboard %></a>
-    <a href="<%= ctx %>/admin/members"><%= labelMembers %></a>
-    <a href="<%= ctx %>/admin/equb"><%= labelEqub %></a>
-    <a href="<%= ctx %>/admin/idir"><%= labelIdir %></a>
-    <a href="<%= ctx %>/admin/expenses"><%= labelExpenses %></a>
-    <a href="<%= ctx %>/views/admin/reports.jsp" class="active"><%= labelReports %></a>
-</div>
+<%@ include file="_sidebar.jspf" %>
 
-<h2>Reports</h2>
+<div class="main-content" id="mainContent">
+<h2 style="margin-top: 30px;">Reports</h2>
 
 <section>
     <h3>Expense Summary</h3>
@@ -117,6 +113,7 @@
         </tbody>
     </table>
 </section>
+</div>
 </body>
 </html>
 
