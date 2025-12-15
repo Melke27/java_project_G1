@@ -184,6 +184,16 @@
         <servlet-name>EqubDetailsServlet</servlet-name>
         <url-pattern>/member/equb-details</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MemberMessageServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.MemberMessageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MemberMessageServlet</servlet-name>
+        <url-pattern>/member/contact-admin</url-pattern>
+    </servlet-mapping>
+
     <!-- Welcome File -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

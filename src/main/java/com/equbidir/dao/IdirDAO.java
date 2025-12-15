@@ -82,12 +82,34 @@ public class IdirDAO {
     }
 
     public void approvePayment(int idirId, int memberId) throws SQLException {
-        String sql = "UPDATE idir_members SET payment_status='paid' WHERE idir_id=? AND member_id=?";
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idirId);
-            ps.setInt(2, memberId);
-            ps.executeUpdate();
+        approvePayment(idirId, memberId, null);
+    }
+
+    public void approvePayment(int idirId, int memberId, Integer approvedBy) throws SQLException {
+        String upd = "UPDATE idir_members SET payment_status='paid' WHERE idir_id=? AND member_id=? AND payment_status<>'paid'";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            int updated;
+            try (PreparedStatement ps = con.prepareStatement(upd)) {
+                ps.setInt(1, idirId);
+                ps.setInt(2, memberId);
+                updated = ps.executeUpdate();
+            }
+
+            if (updated > 0) {
+                String ins = "INSERT INTO idir_payments (idir_id, member_id, amount, approved_by) " +
+                        "SELECT ig.idir_id, ?, ig.monthly_payment, ? FROM idir_groups ig WHERE ig.idir_id = ?";
+                try (PreparedStatement ps2 = con.prepareStatement(ins)) {
+                    ps2.setInt(1, memberId);
+                    if (approvedBy == null) {
+                        ps2.setNull(2, java.sql.Types.INTEGER);
+                    } else {
+                        ps2.setInt(2, approvedBy);
+                    }
+                    ps2.setInt(3, idirId);
+                    ps2.executeUpdate();
+                }
+            }
         }
     }
 }

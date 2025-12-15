@@ -3,6 +3,7 @@ package com.equbidir.controller;
 import com.equbidir.dao.EqubDAO;
 import com.equbidir.dao.MemberDAO;
 import com.equbidir.model.EqubGroup;
+import com.equbidir.model.Member;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -76,7 +77,12 @@ public class EqubServlet extends HttpServlet {
                 equbDAO.addMemberToEqub(memberId, equbId);
             } else if ("approve_payment".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
-                equbDAO.approvePayment(equbId, memberId);
+
+                HttpSession session = req.getSession(false);
+                Member admin = session == null ? null : (Member) session.getAttribute("user");
+                Integer approvedBy = admin == null ? null : admin.getMemberId();
+
+                equbDAO.approvePayment(equbId, memberId, approvedBy);
             } else if ("generate_rotation".equalsIgnoreCase(action)) {
                 boolean random = "random".equalsIgnoreCase(req.getParameter("mode"));
                 equbDAO.generateRotation(equbId, random);

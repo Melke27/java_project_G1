@@ -25,6 +25,17 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 
+-- MEMBER MESSAGES (members -> admin)
+CREATE TABLE IF NOT EXISTS member_messages (
+  message_id INT AUTO_INCREMENT PRIMARY KEY,
+  sender_member_id INT NOT NULL,
+  title VARCHAR(150) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_member_messages_sender FOREIGN KEY (sender_member_id) REFERENCES members(member_id) ON DELETE CASCADE
+);
+CREATE INDEX idx_member_messages_created_at ON member_messages(created_at);
+
 -- EQUB GROUPS
 CREATE TABLE IF NOT EXISTS equb_groups (
   equb_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,6 +57,21 @@ CREATE TABLE IF NOT EXISTS equb_members (
   CONSTRAINT fk_equb_members_equb FOREIGN KEY (equb_id) REFERENCES equb_groups(equb_id) ON DELETE CASCADE
 );
 
+-- EQUB PAYMENTS (history)
+CREATE TABLE IF NOT EXISTS equb_payments (
+  payment_id INT AUTO_INCREMENT PRIMARY KEY,
+  equb_id INT NOT NULL,
+  member_id INT NOT NULL,
+  amount DOUBLE NOT NULL,
+  approved_by INT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_equb_payments_equb FOREIGN KEY (equb_id) REFERENCES equb_groups(equb_id) ON DELETE CASCADE,
+  CONSTRAINT fk_equb_payments_member FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
+  CONSTRAINT fk_equb_payments_approved_by FOREIGN KEY (approved_by) REFERENCES members(member_id) ON DELETE SET NULL
+);
+CREATE INDEX idx_equb_payments_member ON equb_payments(member_id);
+CREATE INDEX idx_equb_payments_created_at ON equb_payments(created_at);
+
 -- IDIR GROUPS
 CREATE TABLE IF NOT EXISTS idir_groups (
   idir_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -64,6 +90,21 @@ CREATE TABLE IF NOT EXISTS idir_members (
   CONSTRAINT fk_idir_members_member FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
   CONSTRAINT fk_idir_members_idir FOREIGN KEY (idir_id) REFERENCES idir_groups(idir_id) ON DELETE CASCADE
 );
+
+-- IDIR PAYMENTS (history)
+CREATE TABLE IF NOT EXISTS idir_payments (
+  payment_id INT AUTO_INCREMENT PRIMARY KEY,
+  idir_id INT NOT NULL,
+  member_id INT NOT NULL,
+  amount DOUBLE NOT NULL,
+  approved_by INT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_idir_payments_idir FOREIGN KEY (idir_id) REFERENCES idir_groups(idir_id) ON DELETE CASCADE,
+  CONSTRAINT fk_idir_payments_member FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
+  CONSTRAINT fk_idir_payments_approved_by FOREIGN KEY (approved_by) REFERENCES members(member_id) ON DELETE SET NULL
+);
+CREATE INDEX idx_idir_payments_member ON idir_payments(member_id);
+CREATE INDEX idx_idir_payments_created_at ON idir_payments(created_at);
 
 -- IDIR EXPENSES
 CREATE TABLE IF NOT EXISTS idir_expenses (

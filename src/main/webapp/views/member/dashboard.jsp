@@ -2,6 +2,7 @@
 <%@ page import="com.equbidir.model.EqubMembership" %>
 <%@ page import="com.equbidir.model.IdirMembership" %>
 <%@ page import="com.equbidir.model.Notification" %>
+<%@ page import="com.equbidir.model.ContributionRecord" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Calendar" %>
 <%@ page import="java.text.SimpleDateFormat" %>
@@ -305,9 +306,15 @@
     String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
     String labelCalendar = isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar";
     String labelNotifications = isAm ? "ማስታወቂያዎች" : "Notifications";
+    String labelContactAdmin = isAm ? "ከአስተዳዳሪ ጋር ይገናኙ" : "Contact Admin";
     String labelNotAssigned = isAm ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።" : "No Equb groups assigned yet.<br>Contact your admin to join one.";
 
     String dashboardError = (String) request.getAttribute("dashboardError");
+
+    String flashMessage = (String) session.getAttribute("message");
+    String flashError = (String) session.getAttribute("error");
+    session.removeAttribute("message");
+    session.removeAttribute("error");
 
     List<EqubMembership> equbMemberships = (List<EqubMembership>) request.getAttribute("equbMemberships");
     if (equbMemberships == null) equbMemberships = java.util.Collections.emptyList();
@@ -317,6 +324,12 @@
 
     List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
     if (notifications == null) notifications = java.util.Collections.emptyList();
+
+    List<Member> admins = (List<Member>) request.getAttribute("admins");
+    if (admins == null) admins = java.util.Collections.emptyList();
+
+    List<ContributionRecord> contributionHistory = (List<ContributionRecord>) request.getAttribute("contributionHistory");
+    if (contributionHistory == null) contributionHistory = java.util.Collections.emptyList();
 
     Calendar cal = Calendar.getInstance();
     int currentDay = cal.get(Calendar.DAY_OF_MONTH);
@@ -374,6 +387,19 @@
                     .format(new java.util.Date()) %>
         </div>
     </div>
+
+    <% if (flashMessage != null) { %>
+    <div style="background:#d4edda;color:#155724;padding:14px;border-radius:12px;margin:14px 0;border:1px solid #c3e6cb;font-weight:700;">
+        <i class="fas fa-check-circle" style="margin-right:10px;"></i>
+        <%= flashMessage %>
+    </div>
+    <% } %>
+    <% if (flashError != null) { %>
+    <div style="background:#f8d7da;color:#721c24;padding:14px;border-radius:12px;margin:14px 0;border:1px solid #f5c6cb;font-weight:700;">
+        <i class="fas fa-exclamation-circle" style="margin-right:10px;"></i>
+        <%= flashError %>
+    </div>
+    <% } %>
 
     <div class="grid">
         <!-- Personal Information -->
@@ -483,16 +509,68 @@
             <% } %>
         </div>
 
+        <!-- Contact Admin -->
+        <div class="card" id="contactAdmin">
+            <h2><i class="fas fa-headset"></i> <%= labelContactAdmin %></h2>
+
+            <% if (admins.isEmpty()) { %>
+            <div class="placeholder">
+                <i class="fas fa-user-shield"></i>
+                <p><%= isAm ? "አስተዳዳሪ አልተገኘም።" : "No admin found." %></p>
+            </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                <% for (Member a : admins) { %>
+                <div style="padding:12px 14px; border:1px solid #eee; border-radius:12px;">
+                    <div style="font-weight:900; color:#1e4d2b;"><%= a.getFullName() %></div>
+                    <div style="color:#666; margin-top:4px; font-weight:700;">
+                        <%= isAm ? "ስልክ" : "Phone" %>: <%= a.getPhone() %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+
+            <div style="margin-top:14px;">
+                <form method="post" action="<%= ctx %>/member/contact-admin" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" name="title" placeholder="<%= isAm ? "ርዕስ" : "Title" %>" required
+                           style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;" />
+                    <textarea name="message" rows="3" placeholder="<%= isAm ? "መልዕክት" : "Message" %>" required
+                              style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px; resize: vertical;"></textarea>
+                    <button type="submit" style="align-self:flex-start; padding:12px 18px; background:#1e4d2b; color:white; border:none; border-radius:999px; font-weight:700; cursor:pointer;">
+                        <i class="fas fa-paper-plane"></i> <%= isAm ? "ላክ" : "Send" %>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Contribution History -->
         <div class="card">
             <h2><i class="fas fa-history"></i> <%= labelHistoryTitle %></h2>
+            <% if (contributionHistory.isEmpty()) { %>
             <div class="placeholder">
                 <i class="fas fa-clock"></i>
-                <p><%= isAm
-                        ? "መዋጮ መጀመሪያ ከተፈጠረ በኋላ የክፍያ ታሪክህ እዚህ ይታያል።"
-                        : "Your payment history will be displayed here once contributions begin." %>
-                </p>
+                <p><%= isAm ? "እስካሁን ምንም የክፍያ ታሪክ የለም።" : "No contribution history yet." %></p>
             </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <% for (ContributionRecord r : contributionHistory) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:900; color:#1e4d2b;">
+                            <%= "equb".equalsIgnoreCase(r.getType()) ? "Equb" : "Idir" %> • <%= r.getGroupName() %>
+                        </div>
+                        <div style="color:#666; margin-top:6px; font-weight:700;">
+                            <%= String.format("%,.2f", r.getAmount()) %> ETB
+                            <% if (r.getPaidAt() != null) { %>
+                                • <%= new SimpleDateFormat("MMM dd, yyyy").format(r.getPaidAt()) %>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
     </div>
 

@@ -2,10 +2,13 @@ package com.equbidir.controller;
 
 import com.equbidir.dao.MemberDAO;
 import com.equbidir.dao.NotificationDAO;
+import com.equbidir.model.ContributionRecord;
 import com.equbidir.model.EqubMembership;
 import com.equbidir.model.IdirMembership;
 import com.equbidir.model.Member;
 import com.equbidir.model.Notification;
+
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -43,16 +46,22 @@ public class MemberDashboardServlet extends HttpServlet {
             List<EqubMembership> equbMemberships = memberDAO.getEqubMemberships(user.getMemberId());
             List<IdirMembership> idirMemberships = memberDAO.getIdirMemberships(user.getMemberId());
             List<Notification> notifications = notificationDAO.getLatestNotifications(10);
+            List<Member> admins = memberDAO.getAdmins();
+            List<ContributionRecord> contributionHistory = memberDAO.getContributionHistory(user.getMemberId(), 20);
 
             request.setAttribute("equbMemberships", equbMemberships);
             request.setAttribute("idirMemberships", idirMemberships);
             request.setAttribute("notifications", notifications);
+            request.setAttribute("admins", admins);
+            request.setAttribute("contributionHistory", contributionHistory);
 
         } catch (Exception e) {
             // Render the dashboard even if DB is not available.
             request.setAttribute("equbMemberships", Collections.emptyList());
             request.setAttribute("idirMemberships", Collections.emptyList());
             request.setAttribute("notifications", Collections.emptyList());
+            request.setAttribute("admins", Collections.emptyList());
+            request.setAttribute("contributionHistory", Collections.emptyList());
             request.setAttribute("dashboardError", "Dashboard data unavailable: " + e.getMessage());
         }
 

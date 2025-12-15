@@ -3,6 +3,7 @@ package com.equbidir.controller;
 import com.equbidir.dao.IdirDAO;
 import com.equbidir.dao.MemberDAO;
 import com.equbidir.model.IdirGroup;
+import com.equbidir.model.Member;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -78,7 +79,12 @@ public class IdirServlet extends HttpServlet {
                 idirDAO.addMemberToIdir(memberId, idirId);
             } else if ("approve_payment".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
-                idirDAO.approvePayment(idirId, memberId);
+
+                HttpSession session = req.getSession(false);
+                Member admin = session == null ? null : (Member) session.getAttribute("user");
+                Integer approvedBy = admin == null ? null : admin.getMemberId();
+
+                idirDAO.approvePayment(idirId, memberId, approvedBy);
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/idir?idir_id=" + idirId);

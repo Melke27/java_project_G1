@@ -83,12 +83,35 @@ public class EqubDAO {
     }
 
     public void approvePayment(int equbId, int memberId) throws SQLException {
-        String sql = "UPDATE equb_members SET payment_status='paid' WHERE equb_id=? AND member_id=?";
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, equbId);
-            ps.setInt(2, memberId);
-            ps.executeUpdate();
+        approvePayment(equbId, memberId, null);
+    }
+
+    public void approvePayment(int equbId, int memberId, Integer approvedBy) throws SQLException {
+        String upd = "UPDATE equb_members SET payment_status='paid' WHERE equb_id=? AND member_id=? AND payment_status<>'paid'";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            int updated;
+            try (PreparedStatement ps = con.prepareStatement(upd)) {
+                ps.setInt(1, equbId);
+                ps.setInt(2, memberId);
+                updated = ps.executeUpdate();
+            }
+
+            // Only create a history record if status actually changed.
+            if (updated > 0) {
+                String ins = "INSERT INTO equb_payments (equb_id, member_id, amount, approved_by) " +
+                        "SELECT eg.equb_id, ?, eg.amount, ? FROM equb_groups eg WHERE eg.equb_id = ?";
+                try (PreparedStatement ps2 = con.prepareStatement(ins)) {
+                    ps2.setInt(1, memberId);
+                    if (approvedBy == null) {
+                        ps2.setNull(2, Types.INTEGER);
+                    } else {
+                        ps2.setInt(2, approvedBy);
+                    }
+                    ps2.setInt(3, equbId);
+                    ps2.executeUpdate();
+                }
+            }
         }
     }
 

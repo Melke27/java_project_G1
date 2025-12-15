@@ -1,4 +1,5 @@
 <%@ page import="com.equbidir.model.Member" %>
+<%@ page import="com.equbidir.model.MemberMessage" %>
 <%@ page import="com.equbidir.model.Notification" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Calendar" %>
@@ -368,6 +369,11 @@
         notifications = java.util.Collections.emptyList();
     }
 
+    List<MemberMessage> memberMessages = (List<MemberMessage>) request.getAttribute("memberMessages");
+    if (memberMessages == null) {
+        memberMessages = java.util.Collections.emptyList();
+    }
+
     Integer regularMembersTotal = (Integer) request.getAttribute("regularMembersTotal");
     if (regularMembersTotal == null) regularMembersTotal = regularMembers.size();
 
@@ -519,6 +525,37 @@
             </div>
             <% } %>
         </div>
+    </div>
+
+    <!-- Messages from Members -->
+    <div class="card" id="memberMessages">
+        <h2><i class="fas fa-comments"></i> <%= isAm ? "የአባላት መልዕክቶች" : "Messages from Members" %></h2>
+
+        <% if (memberMessages.isEmpty()) { %>
+        <div class="placeholder">
+            <i class="fas fa-inbox"></i>
+            <p><%= isAm ? "ምንም መልዕክት የለም።" : "No messages yet." %></p>
+        </div>
+        <% } else { %>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <% for (MemberMessage mm : memberMessages) { %>
+            <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                    <div style="font-weight:900; color:#1e4d2b;"><%= mm.getTitle() %></div>
+                    <div style="color:#666; font-size:13px; font-weight:700;">
+                        <%= mm.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(mm.getCreatedAt()) : "" %>
+                    </div>
+                </div>
+                <div style="color:#666; margin-top:6px;">
+                    <%= mm.getMessage() %>
+                </div>
+                <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                    <%= isAm ? "ከ" : "From" %>: <%= mm.getSenderName() %> (<%= mm.getSenderPhone() %>)
+                </div>
+            </div>
+            <% } %>
+        </div>
+        <% } %>
     </div>
 
     <!-- Member Management Card -->

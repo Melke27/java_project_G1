@@ -4,6 +4,7 @@ import com.equbidir.model.Member;
 import com.equbidir.model.EqubMemberInfo;
 import com.equbidir.model.EqubMembership;
 import com.equbidir.model.IdirMembership;
+import com.equbidir.model.ContributionRecord;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
 
@@ -58,6 +59,28 @@ public class MemberDAO {
             }
         }
         return members;
+    }
+
+    public List<Member> getAdmins() throws SQLException {
+        List<Member> admins = new ArrayList<>();
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE LOWER(role)='admin' ORDER BY full_name ASC";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                admins.add(new Member(
+                        rs.getInt("member_id"),
+                        rs.getString("full_name"),
+                        rs.getString("phone"),
+                        rs.getString("address"),
+                        rs.getString("role")
+                ));
+            }
+        }
+
+        return admins;
     }
 
     public boolean createMember(Member member, String plainPassword) throws SQLException {
@@ -304,6 +327,41 @@ public class MemberDAO {
                             rs.getString("idir_name"),
                             rs.getDouble("monthly_payment"),
                             rs.getString("payment_status")
+                    ));
+                }
+            }
+        }
+
+        return out;
+    }
+
+    public List<ContributionRecord> getContributionHistory(int memberId, int limit) throws SQLException {
+        List<ContributionRecord> out = new ArrayList<>();
+
+        String sql = "SELECT * FROM (" +
+                "  SELECT 'equb' AS type, eg.equb_name AS group_name, ep.amount AS amount, ep.created_at AS paid_at " +
+                "  FROM equb_payments ep JOIN equb_groups eg ON ep.equb_id = eg.equb_id " +
+                "  WHERE ep.member_id = ? " +
+                "  UNION ALL " +
+                "  SELECT 'idir' AS type, ig.idir_name AS group_name, ip.amount AS amount, ip.created_at AS paid_at " +
+                "  FROM idir_payments ip JOIN idir_groups ig ON ip.idir_id = ig.idir_id " +
+                "  WHERE ip.member_id = ? " +
+                ") t ORDER BY t.paid_at DESC LIMIT ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            ps.setInt(2, memberId);
+            ps.setInt(3, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(new ContributionRecord(
+                            rs.getString("type"),
+                            rs.getString("group_name"),
+                            rs.getDouble("amount"),
+                            rs.getTimestamp("paid_at")
                     ));
                 }
             }
