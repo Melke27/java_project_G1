@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
             if ("admin".equalsIgnoreCase(member.getRole())) {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else {
-                response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+                response.sendRedirect(request.getContextPath() + "/member/dashboard");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class LoginServlet extends HttpServlet {
             if ("admin".equalsIgnoreCase(role)) {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else {
-                response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+                response.sendRedirect(request.getContextPath() + "/member/dashboard");
             }
             return;
         }

@@ -26,6 +26,10 @@
     String labelIdir = isAm ? "እድር" : "Idir";
     String labelExpenses = isAm ? "ወጪዎች" : "Expenses";
     String labelReports = isAm ? "ሪፖርቶች" : "Reports";
+    String labelMyProfile = isAm ? "የግል መረጃዬ" : "My Profile";
+    String labelLogout = isAm ? "ውጣ" : "Logout";
+
+    request.setAttribute("activePage", "members.add");
 
     Member currentUser = (Member) session.getAttribute("user");
     if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
@@ -39,25 +43,14 @@
     session.removeAttribute("error");
 %>
 
-<div class="admin-nav">
-    <div class="lang-switch">
-        <span><%= labelLanguage %>:</span>
-        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a>|
-        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
-    </div>
-    <a href="<%= ctx %>/admin/dashboard"><%= labelDashboard %></a>
-    <a href="<%= ctx %>/admin/members" class="active"><%= labelMembers %></a>
-    <a href="<%= ctx %>/admin/equb"><%= labelEqub %></a>
-    <a href="<%= ctx %>/admin/idir"><%= labelIdir %></a>
-    <a href="<%= ctx %>/admin/expenses"><%= labelExpenses %></a>
-    <a href="<%= ctx %>/views/admin/reports.jsp"><%= labelReports %></a>
-</div>
+<%@ include file="_sidebar.jspf" %>
 
-<div class="dashboard-container">
+<div class="main-content" id="mainContent">
+    <div class="dashboard-container">
     <div class="header">
         <h1>Add New Member</h1>
         <div class="header-buttons">
-            <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp" class="profile-btn">
+            <a href="<%= request.getContextPath() %>/admin/dashboard" class="profile-btn">
                 <i class="fas fa-tachometer-alt"></i> Back to Dashboard
             </a>
             <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
@@ -123,16 +116,22 @@
                 </small>
             </div>
 
-            <div style="text-align: right;">
-                <a href="<%= request.getContextPath() %>/views/admin/dashboard.jsp"
-                   style="margin-right: 15px; color: #666; text-decoration: none; font-weight: 500;">
+            <div style="display:flex; justify-content:flex-end; gap: 12px; flex-wrap: wrap;">
+                <a href="<%= request.getContextPath() %>/admin/dashboard"
+                   style="margin-right: 15px; color: #666; text-decoration: none; font-weight: 500; align-self:center;">
                     Cancel
                 </a>
-                <button type="submit" class="profile-btn" style="padding: 14px 32px; font-size: 16px; border: none; cursor: pointer;">
-                    <i class="fas fa-save"></i> Save Member
+                <button type="submit" name="next" value="add_another" class="profile-btn"
+                        style="padding: 14px 28px; font-size: 16px; border: none; cursor: pointer;">
+                    <i class="fas fa-user-plus"></i> Save & Add Another
+                </button>
+                <button type="submit" name="next" value="dashboard" class="profile-btn"
+                        style="padding: 14px 28px; font-size: 16px; border: none; cursor: pointer; background:#c9a227;">
+                    <i class="fas fa-tachometer-alt"></i> Save & Go Dashboard
                 </button>
             </div>
         </form>
+    </div>
     </div>
 </div>
 

@@ -18,24 +18,41 @@ public class EqubDetailsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        Member user = (Member) session.getAttribute("user");
+        HttpSession session = request.getSession(false);
+        Member user = session == null ? null : (Member) session.getAttribute("user");
 
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        try {
-            EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
+        String equbIdStr = request.getParameter("equb_id");
 
+        try {
+            // If equb_id not provided, fall back to the first Equb membership.
+            int equbId;
+            if (equbIdStr == null || equbIdStr.trim().isEmpty()) {
+                var memberships = memberDAO.getEqubMemberships(user.getMemberId());
+                if (memberships.isEmpty()) {
+                    request.setAttribute("equbInfo", null);
+                    request.getRequestDispatcher("/views/member/equb-details.jsp").forward(request, response);
+                    return;
+                }
+                equbId = memberships.get(0).getEqubId();
+            } else {
+                equbId = Integer.parseInt(equbIdStr);
+            }
+
+            EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId(), equbId);
             request.setAttribute("equbInfo", equbInfo);
             request.getRequestDispatcher("/views/member/equb-details.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("error", "Error loading Equb details.");
-            response.sendRedirect(request.getContextPath() + "/views/member/dashboard.jsp");
+            if (session != null) {
+                session.setAttribute("error", "Error loading Equb details: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + "/member/dashboard");
         }
     }
 

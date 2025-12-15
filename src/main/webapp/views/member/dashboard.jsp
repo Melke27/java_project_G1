@@ -1,7 +1,14 @@
 <%@ page import="com.equbidir.model.Member" %>
+<<<<<<< HEAD
 <%@ page import="com.equbidir.dao.MemberDAO" %>
 <%@ page import="com.equbidir.model.EqubMemberInfo" %>
 <%@ page import="com.equbidir.model.IdirMemberInfo" %>
+=======
+<%@ page import="com.equbidir.model.EqubMembership" %>
+<%@ page import="com.equbidir.model.IdirMembership" %>
+<%@ page import="com.equbidir.model.Notification" %>
+<%@ page import="java.util.List" %>
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 <%@ page import="java.util.Calendar" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Locale" %>
@@ -305,12 +312,28 @@
     String labelEqubTitle = isAm ? "የእቁብ ቡድኖቼ" : "My Equb Groups";
     String labelIdirTitle = isAm ? "የእድር ቡድኔ" : "My Idir Group";
     String labelCalendar = isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar";
+<<<<<<< HEAD
     String labelNotAssigned = isAm ? "እስካሁን ምንም ቡድን አልተመደበልህም።" : "No group assigned yet.";
     String labelContactAdmin = isAm ? "ለመቀላቀል አስተዳዳሪዎን ያነጋግሩ።" : "Contact your administrator to join one.";
 
     MemberDAO memberDAO = new MemberDAO();
     EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
     IdirMemberInfo idirInfo = memberDAO.getMemberIdirInfo(user.getMemberId());
+=======
+    String labelNotifications = isAm ? "ማስታወቂያዎች" : "Notifications";
+    String labelNotAssigned = isAm ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።" : "No Equb groups assigned yet.<br>Contact your admin to join one.";
+
+    String dashboardError = (String) request.getAttribute("dashboardError");
+
+    List<EqubMembership> equbMemberships = (List<EqubMembership>) request.getAttribute("equbMemberships");
+    if (equbMemberships == null) equbMemberships = java.util.Collections.emptyList();
+
+    List<IdirMembership> idirMemberships = (List<IdirMembership>) request.getAttribute("idirMemberships");
+    if (idirMemberships == null) idirMemberships = java.util.Collections.emptyList();
+
+    List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+    if (notifications == null) notifications = java.util.Collections.emptyList();
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 
     Calendar cal = Calendar.getInstance();
     int currentDay = cal.get(Calendar.DAY_OF_MONTH);
@@ -337,7 +360,7 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/views/member/dashboard.jsp" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/member/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= ctx %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
@@ -383,35 +406,108 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         <!-- My Equb Group - Clickable Card -->
         <div class="card clickable-card" onclick="window.location='<%= ctx %>/member/equb-details'">
+=======
+        <!-- Notifications from Admin -->
+        <div class="card">
+            <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
+
+            <% if (dashboardError != null) { %>
+            <div style="background:#fff3cd;color:#856404;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid #ffeeba;font-weight:600;">
+                <i class="fas fa-triangle-exclamation" style="margin-right:10px;"></i>
+                <%= dashboardError %>
+            </div>
+            <% } %>
+
+            <% if (notifications.isEmpty()) { %>
+            <div class="placeholder">
+                <i class="fas fa-envelope-open-text"></i>
+                <p><%= isAm ? "ምንም አዲስ ማስታወቂያ የለም።" : "No new notifications." %></p>
+            </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <% for (Notification n : notifications) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                        <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
+                        <div style="color:#666; font-size:13px; font-weight:700;">
+                            <%= n.getCreatedAt() != null ? new SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+                        </div>
+                    </div>
+                    <div style="color:#666; margin-top:6px;">
+                        <%= n.getMessage() %>
+                    </div>
+                    <% if (n.getCreatedByName() != null) { %>
+                    <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                        <%= isAm ? "ከ" : "From" %>: <%= n.getCreatedByName() %>
+                    </div>
+                    <% } %>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+
+        <!-- My Equb Groups -->
+        <div class="card">
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
             <h2><i class="fas fa-handshake"></i> <%= labelEqubTitle %></h2>
-            <% if (equbInfo == null) { %>
+            <% if (equbMemberships.isEmpty()) { %>
             <div class="placeholder">
                 <i class="fas fa-users"></i>
                 <p><%= labelNotAssigned %><br><%= labelContactAdmin %></p>
             </div>
             <% } else { %>
+<<<<<<< HEAD
             <div class="group-summary">
                 <div class="group-name"><%= equbInfo.getEqubName() %></div>
                 <div class="detail"><%= String.format("%,.2f", equbInfo.getAmount()) %> ETB - <%= equbInfo.getFrequency() %></div>
                 <div class="detail"><%= equbInfo.getTotalMembers() %> <%= isAm ? "አባላት" : "Members" %></div>
                 <div class="detail" style="margin-top: 20px; color: #1e4d2b; font-weight: bold;">
                     <%= isAm ? "ዝርዝር ለማየት ጠቅ ያድርጉ" : "Click for details" %> →
+=======
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <% for (EqubMembership em : equbMemberships) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:800; color:#1e4d2b;"><%= em.getEqubName() %></div>
+                        <div style="color:#666; font-size:14px;">
+                            <%= String.format("%,.2f", em.getAmount()) %> ETB • <%= em.getFrequency() %> • <%= em.getPaymentStatus() %>
+                            <% if (em.getRotationPosition() != null) { %>
+                                • <%= isAm ? "ቦታ" : "Pos" %>: <%= em.getRotationPosition() %>
+                            <% } %>
+                        </div>
+                    </div>
+                    <a href="<%= ctx %>/member/equb-details?equb_id=<%= em.getEqubId() %>"
+                       style="text-decoration:none; background:#1e4d2b; color:white; padding:10px 14px; border-radius:999px; font-weight:700;">
+                        <%= isAm ? "ዝርዝር" : "Details" %>
+                    </a>
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
                 </div>
+                <% } %>
             </div>
             <% } %>
         </div>
 
+<<<<<<< HEAD
         <!-- My Idir Group - Clickable Card -->
         <div class="card clickable-card" onclick="window.location='<%= ctx %>/member/idir-details'">
             <h2><i class="fas fa-heart"></i> <%= labelIdirTitle %></h2>
             <% if (idirInfo == null) { %>
+=======
+        <!-- My Idir Group(s) -->
+        <div class="card">
+            <h2><i class="fas fa-heart"></i> <%= labelIdirTitle %></h2>
+            <% if (idirMemberships.isEmpty()) { %>
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
             <div class="placeholder">
                 <i class="fas fa-hands-helping"></i>
                 <p><%= labelNotAssigned %><br><%= labelContactAdmin %></p>
             </div>
             <% } else { %>
+<<<<<<< HEAD
             <div class="group-summary">
                 <div class="group-name"><%= idirInfo.getIdirName() %></div>
                 <div class="detail"><%= String.format("%,.2f", idirInfo.getMonthlyPayment()) %> ETB <%= isAm ? "ወርሃዊ" : "monthly" %></div>
@@ -422,6 +518,17 @@
                 <div class="detail" style="margin-top: 20px; color: #1e4d2b; font-weight: bold;">
                     <%= isAm ? "ዝርዝር ለማየት ጠቅ ያድርጉ" : "Click for details" %> →
                 </div>
+=======
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <% for (IdirMembership im : idirMemberships) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="font-weight:800; color:#1e4d2b;"><%= im.getIdirName() %></div>
+                    <div style="color:#666; font-size:14px; margin-top:6px;">
+                        <%= String.format("%,.2f", im.getMonthlyPayment()) %> ETB • <%= im.getPaymentStatus() %>
+                    </div>
+                </div>
+                <% } %>
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
             </div>
             <% } %>
         </div>

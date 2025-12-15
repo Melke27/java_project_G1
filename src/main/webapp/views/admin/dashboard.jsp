@@ -1,8 +1,8 @@
 <%@ page import="com.equbidir.model.Member" %>
-<%@ page import="com.equbidir.dao.MemberDAO" %>
+<%@ page import="com.equbidir.model.Notification" %>
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Calendar" %>
+<%@ page import="java.net.URLEncoder" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
@@ -330,6 +330,9 @@
     String labelReports = isAm ? "ሪፖርቶች" : "Reports";
     String labelMyProfile = isAm ? "የግል መረጃዬ" : "My Profile";
     String labelLogout = isAm ? "ውጣ" : "Logout";
+
+    // Sidebar active page
+    request.setAttribute("activePage", "dashboard");
     String labelAdminDashboard = isAm ? "የአስተዳዳሪ ዳሽቦርድ" : "Admin Dashboard";
     String labelTotalMembers = isAm ? "ጠቅላላ አባላት" : "Total Members";
     String labelActiveEqub = isAm ? "ንቁ የእቁብ ቡድኖች" : "Active Equb Groups";
@@ -338,88 +341,77 @@
     String labelMemberManagement = isAm ? "የአባላት አስተዳደር" : "Member Management";
     String labelAddMember = isAm ? "አዲስ አባል ጨምር" : "Add New Member";
     String labelSearchPlaceholder = isAm ? "በስም ወይም ስልክ ፈልግ" : "Search by name or phone";
+    String labelEqubUnpaid = isAm ? "ያልተከፈሉ የእቁብ አባላት" : "Equb Unpaid Members";
+    String labelIdirUnpaid = isAm ? "ያልተከፈሉ የእድር አባላት" : "Idir Unpaid Members";
+    String labelIdirExpensesTotal = isAm ? "ጠቅላላ የእድር ወጪ" : "Total Idir Expenses";
+    String labelIdirExpensesCount = isAm ? "የወጪ ብዛት" : "Expense Records";
+    String labelNotifications = isAm ? "ማስታወቂያዎች" : "Notifications";
+    String labelPostNotification = isAm ? "ማስታወቂያ ላክ" : "Post Notification";
 
     String message = (String) session.getAttribute("message");
     String error = (String) session.getAttribute("error");
     session.removeAttribute("message");
     session.removeAttribute("error");
 
-    String search = request.getParameter("q");
+    String dashboardError = (String) request.getAttribute("dashboardError");
 
-    MemberDAO memberDAO = new MemberDAO();
-    List<Member> allMembers = memberDAO.getAllMembers();
+    String search = (String) request.getAttribute("q");
+    if (search == null) search = request.getParameter("q");
 
-    List<Member> regularMembers = new ArrayList<>();
-    for (Member m : allMembers) {
-        if (m.getRole() == null || !"admin".equalsIgnoreCase(m.getRole())) {
-            boolean matches = true;
-            if (search != null && !search.trim().isEmpty()) {
-                String s = search.trim().toLowerCase();
-                String name = m.getFullName() != null ? m.getFullName().toLowerCase() : "";
-                String phone = m.getPhone() != null ? m.getPhone().toLowerCase() : "";
-                matches = name.contains(s) || phone.contains(s);
-            }
-            if (matches) {
-                regularMembers.add(m);
-            }
-        }
+    List<Member> regularMembers = (List<Member>) request.getAttribute("regularMembers");
+    if (regularMembers == null) {
+        regularMembers = java.util.Collections.emptyList();
     }
 
-    int equbGroupsCount = 0;
-    int idirGroupsCount = 0;
+    List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+    if (notifications == null) {
+        notifications = java.util.Collections.emptyList();
+    }
+
+    Integer regularMembersTotal = (Integer) request.getAttribute("regularMembersTotal");
+    if (regularMembersTotal == null) regularMembersTotal = regularMembers.size();
+
+    Integer pageNum = (Integer) request.getAttribute("page");
+    Integer pageSize = (Integer) request.getAttribute("size");
+    Integer totalPages = (Integer) request.getAttribute("totalPages");
+    if (pageNum == null) pageNum = 1;
+    if (pageSize == null) pageSize = 10;
+    if (totalPages == null) totalPages = 1;
+
+    Integer equbGroupsCount = (Integer) request.getAttribute("equbGroupsCount");
+    Integer idirGroupsCount = (Integer) request.getAttribute("idirGroupsCount");
+    Integer equbUnpaidCount = (Integer) request.getAttribute("equbUnpaidCount");
+    Integer idirUnpaidCount = (Integer) request.getAttribute("idirUnpaidCount");
+    Integer idirExpensesCount = (Integer) request.getAttribute("idirExpensesCount");
+    Double idirExpensesTotal = (Double) request.getAttribute("idirExpensesTotal");
+
+    if (equbGroupsCount == null) equbGroupsCount = 0;
+    if (idirGroupsCount == null) idirGroupsCount = 0;
+    if (equbUnpaidCount == null) equbUnpaidCount = 0;
+    if (idirUnpaidCount == null) idirUnpaidCount = 0;
+    if (idirExpensesCount == null) idirExpensesCount = 0;
+    if (idirExpensesTotal == null) idirExpensesTotal = 0.0;
+
+    String qParam = "";
+    if (search != null && !search.trim().isEmpty()) {
+        try {
+            qParam = "&q=" + URLEncoder.encode(search, "UTF-8");
+        } catch (Exception ignored) {}
+    }
 
     Calendar cal = Calendar.getInstance();
     int currentDay = cal.get(Calendar.DAY_OF_MONTH);
     cal.set(Calendar.DAY_OF_MONTH, 1);
     int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
     int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+    String monthLabel = new java.text.SimpleDateFormat(isAm ? "MMMM yyyy" : "MMMM yyyy").format(cal.getTime());
 
     String[] daysEn = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
     String[] daysAm = {"እሑድ", "ሰኞ", "ማክሰኞ", "ረቡዕ", "ሐሙስ", "ዓርብ", "ቅዳሜ"};
     String[] days = isAm ? daysAm : daysEn;
 %>
 
-<!-- Dark Overlay -->
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-<!-- Hamburger Button -->
-<div class="hamburger" onclick="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-</div>
-
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h2>Equb & Idir</h2>
-    </div>
-    <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/admin/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
-        <li><a href="<%= ctx %>/admin/members"><i class="fas fa-users"></i> <%= labelMembers %></a></li>
-        <li><a href="<%= ctx %>/admin/equb"><i class="fas fa-handshake"></i> <%= labelEqub %></a></li>
-        <li><a href="<%= ctx %>/admin/idir"><i class="fas fa-heart"></i> <%= labelIdir %></a></li>
-        <li><a href="<%= ctx %>/admin/expenses"><i class="fas fa-money-bill-wave"></i> <%= labelExpenses %></a></li>
-        <li><a href="<%= ctx %>/views/admin/reports.jsp"><i class="fas fa-chart-bar"></i> <%= labelReports %></a></li>
-    </ul>
-    <div style="margin-top: auto; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.2);">
-        <ul class="sidebar-menu">
-            <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user-cog"></i> <%= labelMyProfile %></a></li>
-            <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
-        </ul>
-        <div class="lang-selector">
-            <label><%= isAm ? "ቋንቋ ይምረጡ" : "Select Language" %></label>
-            <div class="lang-options">
-                <div class="lang-option <%= !isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=en'">
-                    <img src="https://flagcdn.com/w80/gb.png" alt="English">
-                    <span>English</span>
-                </div>
-                <div class="lang-option <%= isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=am'">
-                    <img src="https://flagcdn.com/w80/et.png" alt="አማርኛ">
-                    <span>አማርኛ</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<%@ include file="_sidebar.jspf" %>
 
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
@@ -430,6 +422,13 @@
             <%= new java.text.SimpleDateFormat(isAm ? "dd MMMM yyyy" : "MMMM dd, yyyy").format(new java.util.Date()) %>
         </div>
     </div>
+
+    <% if (dashboardError != null) { %>
+    <div style="background:#fff3cd;color:#856404;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #ffeeba;font-weight:600;">
+        <i class="fas fa-triangle-exclamation fa-lg" style="margin-right:10px;"></i>
+        <%= dashboardError %>
+    </div>
+    <% } %>
 
     <% if (message != null) { %>
     <div style="background:#d4edda;color:#155724;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #c3e6cb;font-weight:600;">
@@ -448,7 +447,7 @@
     <div class="grid">
         <div class="card">
             <h2><i class="fas fa-users"></i> <%= labelTotalMembers %></h2>
-            <p class="info-item"><%= regularMembers.size() %></p>
+            <p class="info-item"><%= regularMembersTotal %></p>
         </div>
 
         <div class="card">
@@ -462,19 +461,75 @@
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-wallet"></i> <%= labelTotalFund %></h2>
-            <p class="placeholder"><%= isAm ? "መዋጮ ከጀመረ በኋላ እዚህ ይታያል" : "Will be available after contributions start" %></p>
+            <h2><i class="fas fa-money-bill-wave"></i> <%= labelEqubUnpaid %></h2>
+            <p class="info-item"><%= equbUnpaidCount %></p>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-money-check-dollar"></i> <%= labelIdirUnpaid %></h2>
+            <p class="info-item"><%= idirUnpaidCount %></p>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-receipt"></i> <%= labelIdirExpensesTotal %></h2>
+            <div style="text-align:center; margin-top: 10px;">
+                <div class="info-item" style="font-size:28px;"><%= String.format("%.2f", idirExpensesTotal) %></div>
+                <div style="color:#666; font-weight:600;"><%= labelIdirExpensesCount %>: <%= idirExpensesCount %></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card" id="notifications">
+        <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
+
+        <div style="margin-top: 12px;">
+            <form method="post" action="<%= ctx %>/admin/notifications" style="display:flex; flex-direction:column; gap: 10px;">
+                <input type="text" name="title" placeholder="<%= isAm ? "ርዕስ" : "Title" %>" required
+                       style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;" />
+                <textarea name="message" rows="3" placeholder="<%= isAm ? "መልዕክት" : "Message" %>" required
+                          style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px; resize: vertical;"></textarea>
+                <button type="submit" style="align-self:flex-start; padding:12px 18px; background:#1e4d2b; color:white; border:none; border-radius:999px; font-weight:700; cursor:pointer;">
+                    <i class="fas fa-paper-plane"></i> <%= labelPostNotification %>
+                </button>
+            </form>
+        </div>
+
+        <div style="margin-top: 18px;">
+            <div style="font-weight:800; color:#1e4d2b; margin-bottom: 10px;">
+                <%= isAm ? "የቅርብ ጊዜ ማስታወቂያዎች" : "Recent notifications" %>
+            </div>
+
+            <% if (notifications.isEmpty()) { %>
+            <div class="placeholder">
+                <i class="fas fa-envelope-open-text"></i>
+                <p><%= isAm ? "ምንም ማስታወቂያ የለም።" : "No notifications posted yet." %></p>
+            </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <% for (Notification n : notifications) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
+                    <div style="color:#666; margin-top:6px;"><%= n.getMessage() %></div>
+                    <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                        <%= n.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
     </div>
 
     <!-- Member Management Card -->
-    <div class="card">
+    <div class="card" id="memberManagement">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
             <h2><i class="fas fa-users-cog"></i> <%= labelMemberManagement %></h2>
             <div class="search-bar">
                 <form method="get" style="display: flex; gap: 12px; flex: 1; min-width: 250px;">
                     <input type="text" name="q" value="<%= search != null ? search : "" %>"
                            placeholder="<%= labelSearchPlaceholder %>">
+                    <input type="hidden" name="size" value="<%= pageSize %>">
                     <button type="submit"><i class="fas fa-search"></i> Search</button>
                 </form>
                 <a href="<%= ctx %>/views/admin/member_management.jsp" class="profile-btn">
@@ -511,7 +566,7 @@
                     <td><%= m.getPhone() != null ? m.getPhone() : "-" %></td>
                     <td><%= m.getAddress() != null ? m.getAddress() : "-" %></td>
                     <td class="actions">
-                        <a href="<%= ctx %>/views/admin/edit-member.jsp?id=<%= m.getMemberId() %>"
+                        <a href="<%= ctx %>/admin/edit-member?id=<%= m.getMemberId() %>"
                            class="edit-btn" title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -526,12 +581,35 @@
                 </tbody>
             </table>
         </div>
+
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-top: 16px; flex-wrap: wrap; gap: 12px;">
+            <div style="color:#666; font-weight:600;">
+                <%= isAm ? "ጠቅላላ" : "Total" %>: <%= regularMembersTotal %> |
+                <%= isAm ? "ገጽ" : "Page" %> <%= pageNum %> / <%= totalPages %>
+            </div>
+            <div style="display:flex; gap: 10px; align-items:center;">
+                <% if (pageNum > 1) { %>
+                <a class="profile-btn" style="text-decoration:none;" href="<%= ctx %>/admin/dashboard?page=<%= (pageNum - 1) %>&size=<%= pageSize %><%= qParam %>">
+                    <%= isAm ? "ቀዳሚ" : "Prev" %>
+                </a>
+                <% } %>
+
+                <% if (pageNum < totalPages) { %>
+                <a class="profile-btn" style="text-decoration:none;" href="<%= ctx %>/admin/dashboard?page=<%= (pageNum + 1) %>&size=<%= pageSize %><%= qParam %>">
+                    <%= isAm ? "ቀጣይ" : "Next" %>
+                </a>
+                <% } %>
+            </div>
+        </div>
         <% } %>
     </div>
 
     <!-- Calendar -->
     <div class="card" style="margin-top: 40px;">
-        <h2><i class="fas fa-calendar-alt"></i> <%= isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar" %></h2>
+        <h2 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <span><i class="fas fa-calendar-alt"></i> <%= isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar" %></span>
+            <span style="color:#666;font-size:14px;font-weight:700;"><%= monthLabel %></span>
+        </h2>
         <div class="calendar-container">
             <table class="calendar">
                 <thead>
@@ -556,6 +634,13 @@
                                 out.print("</tr><tr>");
                             }
                         }
+
+                        // Fill remaining empty cells so the last week row is complete
+                        int usedCells = (firstDayOfWeek - 1) + daysInMonth;
+                        int trailing = (7 - (usedCells % 7)) % 7;
+                        for (int t = 0; t < trailing; t++) {
+                            out.print("<td></td>");
+                        }
                     %>
                 </tr>
                 </tbody>
@@ -563,17 +648,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const mainContent = document.getElementById('mainContent');
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-        mainContent.classList.toggle('blurred');
-    }
-</script>
 
 </body>
 </html>

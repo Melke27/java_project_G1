@@ -347,6 +347,13 @@
     } else if (success != null || error != null) {
         activeTab = "personal";
     }
+<<<<<<< HEAD
+=======
+
+    String dashboardPath = "admin".equalsIgnoreCase(user.getRole())
+            ? "/admin/dashboard"
+            : "/member/dashboard";
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 %>
 
 <!-- Dark Overlay -->

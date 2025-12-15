@@ -45,6 +45,8 @@ public class AddMemberServlet extends HttpServlet {
         newMember.setAddress(address);
         newMember.setRole("member");
 
+        String next = request.getParameter("next");
+
         try {
             boolean created = memberDAO.createMember(newMember, password);
 
@@ -57,7 +59,12 @@ public class AddMemberServlet extends HttpServlet {
             session.setAttribute("error", "Error adding member: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/views/admin/member_management.jsp");
+        if ("dashboard".equalsIgnoreCase(next)) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard#memberManagement");
+        } else {
+            // Default: stay on add-member page so admin can register members one-by-one.
+            response.sendRedirect(request.getContextPath() + "/views/admin/member_management.jsp");
+        }
     }
 
     @Override

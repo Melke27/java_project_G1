@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS members (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- NOTIFICATIONS (admin announcements visible to members)
+CREATE TABLE IF NOT EXISTS notifications (
+  notification_id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(150) NOT NULL,
+  message TEXT NOT NULL,
+  created_by INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_notifications_created_by FOREIGN KEY (created_by) REFERENCES members(member_id) ON DELETE CASCADE
+);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+
 -- EQUB GROUPS
 CREATE TABLE IF NOT EXISTS equb_groups (
   equb_id INT AUTO_INCREMENT PRIMARY KEY,

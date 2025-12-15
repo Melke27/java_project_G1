@@ -1,6 +1,5 @@
 <%@ page import="com.equbidir.model.Member" %>
 <%@ page import="com.equbidir.model.EqubMemberInfo" %>
-<%@ page import="com.equbidir.dao.MemberDAO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
@@ -58,7 +57,7 @@
 <%
     Member user = (Member) session.getAttribute("user");
     if (user == null) {
-        response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+        response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
 
@@ -68,8 +67,7 @@
 
     String ctx = request.getContextPath();
 
-    MemberDAO memberDAO = new MemberDAO();
-    EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
+    EqubMemberInfo equbInfo = (EqubMemberInfo) request.getAttribute("equbInfo");
 
     String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
     String labelMyEqub = isAm ? "የእቁብ ቡድኔ" : "My Equb Group";
@@ -102,12 +100,19 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
+<<<<<<< HEAD
         <li><a href="<%= request.getContextPath() %>/views/member/dashboard.jsp"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/equb-details" class="active"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= request.getContextPath() %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
         <li><a href="<%= request.getContextPath() %>/member/contribution-history"><i class="fas fa-history"></i> <%= labelHistoryTitle %></a></li>
         <li><a href="<%= request.getContextPath() %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
+=======
+        <li><a href="<%= ctx %>/member/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/member/equb-details" class="active"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
+        <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
+        <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
     </ul>
 
     <div class="lang-selector">
@@ -129,7 +134,7 @@
 <div class="main-content" id="mainContent">
     <div class="welcome-header">
         <h1><%= labelMyEqub %></h1>
-        <a href="<%= request.getContextPath() %>/views/member/dashboard.jsp" class="back-btn">
+        <a href="<%= request.getContextPath() %>/member/dashboard" class="back-btn">
             <i class="fas fa-arrow-left"></i> <%= labelBack %>
         </a>
     </div>

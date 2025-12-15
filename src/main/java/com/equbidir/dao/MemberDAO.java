@@ -1,11 +1,17 @@
 package com.equbidir.dao;
 
 import com.equbidir.model.Member;
+import com.equbidir.model.EqubMemberInfo;
+import com.equbidir.model.EqubMembership;
+import com.equbidir.model.IdirMembership;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
+<<<<<<< HEAD
 import com.equbidir.model.EqubMemberInfo;
 import com.equbidir.model.IdirMemberInfo;
 import com.equbidir.model.Contribution;
+=======
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -103,6 +109,84 @@ public class MemberDAO {
         return null;
     }
 
+    public Member getMemberById(int memberId) throws SQLException {
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE member_id = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public int countRegularMembers(String search) throws SQLException {
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        String base = "SELECT COUNT(*) FROM members WHERE (role IS NULL OR LOWER(role) <> 'admin')";
+        String sql = hasSearch ? base + " AND (LOWER(full_name) LIKE ? OR LOWER(phone) LIKE ?)" : base;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            if (hasSearch) {
+                String s = "%" + search.trim().toLowerCase() + "%";
+                ps.setString(1, s);
+                ps.setString(2, s);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public List<Member> getRegularMembers(String search, int offset, int limit) throws SQLException {
+        List<Member> members = new ArrayList<>();
+
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        String base = "SELECT member_id, full_name, phone, address, role FROM members WHERE (role IS NULL OR LOWER(role) <> 'admin')";
+        String orderLimit = " ORDER BY full_name ASC LIMIT ? OFFSET ?";
+        String sql = hasSearch
+                ? base + " AND (LOWER(full_name) LIKE ? OR LOWER(phone) LIKE ?)" + orderLimit
+                : base + orderLimit;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            int idx = 1;
+            if (hasSearch) {
+                String s = "%" + search.trim().toLowerCase() + "%";
+                ps.setString(idx++, s);
+                ps.setString(idx++, s);
+            }
+            ps.setInt(idx++, limit);
+            ps.setInt(idx, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    members.add(new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    ));
+                }
+            }
+        }
+        return members;
+    }
+
     public boolean updateMember(Member member) throws SQLException {
         String sql = "UPDATE members SET full_name = ?, phone = ?, address = ?, role = ? WHERE member_id = ?";
 
@@ -174,9 +258,80 @@ public class MemberDAO {
         return null;
     }
 
+    public List<EqubMembership> getEqubMemberships(int memberId) throws SQLException {
+        List<EqubMembership> out = new ArrayList<>();
+
+        String sql = "SELECT eg.equb_id, eg.equb_name, eg.amount, eg.frequency, em.payment_status, em.rotation_position " +
+                "FROM equb_members em JOIN equb_groups eg ON em.equb_id = eg.equb_id " +
+                "WHERE em.member_id = ? " +
+                "ORDER BY eg.equb_name ASC";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Integer rotationPos = rs.getObject("rotation_position") != null
+                            ? rs.getInt("rotation_position")
+                            : null;
+
+                    out.add(new EqubMembership(
+                            rs.getInt("equb_id"),
+                            rs.getString("equb_name"),
+                            rs.getDouble("amount"),
+                            rs.getString("frequency"),
+                            rs.getString("payment_status"),
+                            rotationPos
+                    ));
+                }
+            }
+        }
+
+        return out;
+    }
+
+    public List<IdirMembership> getIdirMemberships(int memberId) throws SQLException {
+        List<IdirMembership> out = new ArrayList<>();
+
+        String sql = "SELECT ig.idir_id, ig.idir_name, ig.monthly_payment, im.payment_status " +
+                "FROM idir_members im JOIN idir_groups ig ON im.idir_id = ig.idir_id " +
+                "WHERE im.member_id = ? " +
+                "ORDER BY ig.idir_name ASC";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(new IdirMembership(
+                            rs.getInt("idir_id"),
+                            rs.getString("idir_name"),
+                            rs.getDouble("monthly_payment"),
+                            rs.getString("payment_status")
+                    ));
+                }
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Backwards-compatible helper: returns details for the first Equb the member belongs to.
+     */
     public EqubMemberInfo getMemberEqubInfo(int memberId) throws SQLException {
+        List<EqubMembership> memberships = getEqubMemberships(memberId);
+        if (memberships.isEmpty()) {
+            return null;
+        }
+        return getMemberEqubInfo(memberId, memberships.get(0).getEqubId());
+    }
+
+    public EqubMemberInfo getMemberEqubInfo(int memberId, int equbId) throws SQLException {
         String sql = """
-            SELECT 
+            SELECT
                 eg.equb_id,
                 eg.equb_name,
                 eg.amount,
@@ -186,13 +341,15 @@ public class MemberDAO {
                 (SELECT COUNT(*) FROM equb_members em2 WHERE em2.equb_id = eg.equb_id) AS total_members
             FROM equb_members em
             JOIN equb_groups eg ON em.equb_id = eg.equb_id
-            WHERE em.member_id = ?
+            WHERE em.member_id = ? AND eg.equb_id = ?
             """;
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, memberId);
+            ps.setInt(2, equbId);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Integer rotationPos = rs.getObject("rotation_position") != null
@@ -213,6 +370,7 @@ public class MemberDAO {
         }
         return null;
     }
+<<<<<<< HEAD
 
     public IdirMemberInfo getMemberIdirInfo(int memberId) throws SQLException {
         String sql = """
@@ -288,3 +446,6 @@ public class MemberDAO {
         return contributions;
     }
 }
+=======
+}
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd

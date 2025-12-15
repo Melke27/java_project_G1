@@ -1,0 +1,157 @@
+<%
+    // Expected variables from including JSP:
+    // ctx (String), isAm (boolean), lang (String), labelDashboard/labelMembers/labelEqub/labelIdir/labelExpenses/labelReports/labelLogout
+    String activePage = (String) request.getAttribute("activePage");
+    if (activePage == null) activePage = "";
+
+    String labelAdminMenu = isAm ? "ማውጫ" : "Menu";
+    String labelMemberList = isAm ? "የአባል ዝርዝር" : "Member List";
+    String labelAddMemberSide = isAm ? "አባል ጨምር" : "Add Member";
+    String labelManagement = isAm ? "አስተዳደር" : "Management";
+    String labelSettings = isAm ? "ቅንብሮች" : "Settings";
+    String labelSelectLanguage = isAm ? "ቋንቋ ይምረጡ" : "Select Language";
+%>
+
+<!-- Dark Overlay -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Hamburger Button -->
+<div class="hamburger" onclick="toggleSidebar()" title="<%= labelAdminMenu %>">
+    <i class="fas fa-bars"></i>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>Equb &amp; Idir</h2>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="<%= ctx %>/admin/dashboard" class="<%= "dashboard".equals(activePage) ? "active" : "" %>">
+                <i class="fas fa-tachometer-alt"></i> <%= labelDashboard %>
+            </a>
+        </li>
+
+        <li class="menu-group">
+            <button type="button" class="submenu-toggle <%= activePage.startsWith("members") ? "active" : "" %>" onclick="toggleSubmenu('membersSub')">
+                <span class="submenu-title">
+                    <i class="fas fa-users"></i> <%= labelMembers %>
+                </span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <ul class="submenu <%= activePage.startsWith("members") ? "open" : "" %>" id="membersSub">
+                <li>
+                    <a href="<%= ctx %>/admin/dashboard#memberManagement" class="<%= "members.list".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-list"></i> <%= labelMemberList %>
+                    </a>
+                </li>
+                <li>
+                    <a href="<%= ctx %>/views/admin/member_management.jsp" class="<%= "members.add".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-user-plus"></i> <%= labelAddMemberSide %>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-group">
+            <button type="button" class="submenu-toggle <%= activePage.startsWith("equb") ? "active" : "" %>" onclick="toggleSubmenu('equbSub')">
+                <span class="submenu-title">
+                    <i class="fas fa-handshake"></i> <%= labelEqub %>
+                </span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <ul class="submenu <%= activePage.startsWith("equb") ? "open" : "" %>" id="equbSub">
+                <li>
+                    <a href="<%= ctx %>/admin/equb" class="<%= "equb.manage".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-screwdriver-wrench"></i> <%= labelManagement %>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-group">
+            <button type="button" class="submenu-toggle <%= activePage.startsWith("idir") ? "active" : "" %>" onclick="toggleSubmenu('idirSub')">
+                <span class="submenu-title">
+                    <i class="fas fa-heart"></i> <%= labelIdir %>
+                </span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <ul class="submenu <%= activePage.startsWith("idir") ? "open" : "" %>" id="idirSub">
+                <li>
+                    <a href="<%= ctx %>/admin/idir" class="<%= "idir.manage".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-screwdriver-wrench"></i> <%= labelManagement %>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-group">
+            <button type="button" class="submenu-toggle <%= activePage.startsWith("expenses") ? "active" : "" %>" onclick="toggleSubmenu('expensesSub')">
+                <span class="submenu-title">
+                    <i class="fas fa-money-bill-wave"></i> <%= labelExpenses %>
+                </span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <ul class="submenu <%= activePage.startsWith("expenses") ? "open" : "" %>" id="expensesSub">
+                <li>
+                    <a href="<%= ctx %>/admin/expenses" class="<%= "expenses.manage".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-screwdriver-wrench"></i> <%= labelManagement %>
+                    </a>
+                </li>
+                <li>
+                    <a href="<%= ctx %>/views/admin/reports.jsp" class="<%= "expenses.reports".equals(activePage) ? "active" : "" %>">
+                        <i class="fas fa-chart-bar"></i> <%= labelReports %>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <ul class="sidebar-menu">
+            <li>
+                <a href="<%= ctx %>/admin/settings" class="<%= "settings".equals(activePage) ? "active" : "" %>">
+                    <i class="fas fa-gear"></i> <%= labelSettings %>
+                </a>
+            </li>
+            <li>
+                <a href="<%= ctx %>/logout">
+                    <i class="fas fa-sign-out-alt"></i> <%= labelLogout %>
+                </a>
+            </li>
+        </ul>
+
+        <div class="lang-selector">
+            <label><%= labelSelectLanguage %></label>
+            <div class="lang-options">
+                <div class="lang-option <%= !isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=en'">
+                    <img src="https://flagcdn.com/w80/gb.png" alt="English">
+                    <span>English</span>
+                </div>
+                <div class="lang-option <%= isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=am'">
+                    <img src="https://flagcdn.com/w80/et.png" alt="አማርኛ">
+                    <span>አማርኛ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.getElementById('mainContent');
+        if (!sidebar || !overlay || !mainContent) return;
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        mainContent.classList.toggle('blurred');
+    }
+
+    function toggleSubmenu(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('open');
+    }
+</script>

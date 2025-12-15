@@ -5,6 +5,9 @@
 <html>
 <head>
     <title>Idir Expenses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/admin-dashboard.css" />
     <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/style.css" />
 </head>
 <body>
@@ -22,22 +25,15 @@
     String labelIdir = isAm ? "እድር" : "Idir";
     String labelExpenses = isAm ? "ወጪዎች" : "Expenses";
     String labelReports = isAm ? "ሪፖርቶች" : "Reports";
+    String labelMyProfile = isAm ? "የግል መረጃዬ" : "My Profile";
+    String labelLogout = isAm ? "ውጣ" : "Logout";
+
+    request.setAttribute("activePage", "expenses.manage");
 %>
 
-<div class="admin-nav">
-    <div class="lang-switch">
-        <span><%= labelLanguage %>:</span>
-        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a>|
-        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
-    </div>
-    <a href="<%= ctx %>/admin/dashboard"><%= labelDashboard %></a>
-    <a href="<%= ctx %>/admin/members"><%= labelMembers %></a>
-    <a href="<%= ctx %>/admin/equb"><%= labelEqub %></a>
-    <a href="<%= ctx %>/admin/idir"><%= labelIdir %></a>
-    <a href="<%= ctx %>/admin/expenses" class="active"><%= labelExpenses %></a>
-    <a href="<%= ctx %>/views/admin/reports.jsp"><%= labelReports %></a>
-</div>
+<%@ include file="_sidebar.jspf" %>
 
+<div class="main-content" id="mainContent">
 <div class="container">
     <h1><%= isAm ? "የእድር ወጪ አስተዳደር" : "Idir Expense Management" %></h1>
     <a class="link" href="<%=request.getContextPath()%>/admin/dashboard">← Back to Dashboard</a>
@@ -118,6 +114,7 @@
             </table>
         </div>
     <% } %>
+</div>
 </div>
 </body>
 </html>

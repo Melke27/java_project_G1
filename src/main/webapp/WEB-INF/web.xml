@@ -46,6 +46,26 @@
         <url-pattern>/admin/dashboard</url-pattern>
     </servlet-mapping>
 
+    <!-- Member dashboard -->
+    <servlet>
+        <servlet-name>MemberDashboardServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.MemberDashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MemberDashboardServlet</servlet-name>
+        <url-pattern>/member/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <!-- Admin notifications (visible in member dashboard) -->
+    <servlet>
+        <servlet-name>AdminNotificationServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.AdminNotificationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminNotificationServlet</servlet-name>
+        <url-pattern>/admin/notifications</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>MemberServlet</servlet-name>
         <servlet-class>com.equbidir.controller.MemberServlet</servlet-class>
@@ -99,6 +119,33 @@
     <servlet-mapping>
         <servlet-name>DeleteMemberServlet</servlet-name>
         <url-pattern>/admin/delete-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EditMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.EditMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EditMemberServlet</servlet-name>
+        <url-pattern>/admin/edit-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>UpdateMemberServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.UpdateMemberServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateMemberServlet</servlet-name>
+        <url-pattern>/admin/update-member</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminSettingsServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.AdminSettingsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminSettingsServlet</servlet-name>
+        <url-pattern>/admin/settings</url-pattern>
     </servlet-mapping>
 
     <!-- Profile Servlets -->
