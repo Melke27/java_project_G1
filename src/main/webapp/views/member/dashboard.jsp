@@ -1,6 +1,7 @@
 <%@ page import="com.equbidir.model.Member" %>
 <%@ page import="com.equbidir.dao.MemberDAO" %>
 <%@ page import="com.equbidir.model.EqubMemberInfo" %>
+<%@ page import="com.equbidir.model.IdirMemberInfo" %>
 <%@ page import="java.util.Calendar" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Locale" %>
@@ -198,6 +199,7 @@
             border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             transition: transform 0.3s;
+            cursor: pointer;
         }
         .card:hover {
             transform: translateY(-8px);
@@ -209,6 +211,24 @@
             margin-top: 0;
             font-size: 22px;
         }
+        .clickable-card {
+            cursor: pointer;
+        }
+        .group-summary {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .group-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e4d2b;
+            margin: 10px 0;
+        }
+        .detail {
+            font-size: 16px;
+            color: #636e72;
+            margin: 8px 0;
+        }
         .placeholder {
             text-align: center;
             color: #888;
@@ -218,24 +238,6 @@
             font-size: 48px;
             color: #c9a227;
             margin-bottom: 15px;
-        }
-        .equb-card {
-            cursor: pointer;
-        }
-        .equb-summary {
-            text-align: center;
-            padding: 20px 0;
-        }
-        .equb-summary .group-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1e4d2b;
-            margin: 10px 0;
-        }
-        .equb-summary .detail {
-            font-size: 16px;
-            color: #636e72;
-            margin: 8px 0;
         }
         .calendar-card {
             grid-column: 1 / -1;
@@ -293,19 +295,22 @@
     String ctx = request.getContextPath();
 
     String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
-    String labelProfile = isAm ? "የግል መረጃዬ" : "My Profile";
-    String labelLogout = isAm ? "ውጣ" : "Logout";
     String labelMyEqub = isAm ? "የእቁብ ቡድኔ" : "My Equb Group";
+    String labelMyIdir = isAm ? "የእድር ቡድኔ" : "My Idir Group";
+    String labelProfile = isAm ? "የግል መረጃዬ" : "My Profile";
+    String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
+    String labelLogout = isAm ? "ውጣ" : "Logout";
     String labelWelcome = isAm ? "እንኳን በደህና መጡ፣ " : "Welcome back, ";
     String labelPersonalInfo = isAm ? "የግል መረጃ" : "Personal Information";
     String labelEqubTitle = isAm ? "የእቁብ ቡድኖቼ" : "My Equb Groups";
     String labelIdirTitle = isAm ? "የእድር ቡድኔ" : "My Idir Group";
-    String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
     String labelCalendar = isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar";
-    String labelNotAssigned = isAm ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።" : "No Equb groups assigned yet.<br>Contact your admin to join one.";
+    String labelNotAssigned = isAm ? "እስካሁን ምንም ቡድን አልተመደበልህም።" : "No group assigned yet.";
+    String labelContactAdmin = isAm ? "ለመቀላቀል አስተዳዳሪዎን ያነጋግሩ።" : "Contact your administrator to join one.";
 
     MemberDAO memberDAO = new MemberDAO();
     EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
+    IdirMemberInfo idirInfo = memberDAO.getMemberIdirInfo(user.getMemberId());
 
     Calendar cal = Calendar.getInstance();
     int currentDay = cal.get(Calendar.DAY_OF_MONTH);
@@ -334,7 +339,9 @@
     <ul class="sidebar-menu">
         <li><a href="<%= ctx %>/views/member/dashboard.jsp" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
         <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
+        <li><a href="<%= ctx %>/member/idir-details"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
+        <li><a href="<%= ctx %>/member/contribution-history"><i class="fas fa-history"></i> <%= labelHistoryTitle %></a></li>
         <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
     </ul>
 
@@ -376,16 +383,16 @@
             </div>
         </div>
 
-        <!-- My Equb Groups - Clickable Card -->
-        <div class="card equb-card" onclick="window.location='<%= ctx %>/member/equb-details'">
+        <!-- My Equb Group - Clickable Card -->
+        <div class="card clickable-card" onclick="window.location='<%= ctx %>/member/equb-details'">
             <h2><i class="fas fa-handshake"></i> <%= labelEqubTitle %></h2>
             <% if (equbInfo == null) { %>
             <div class="placeholder">
                 <i class="fas fa-users"></i>
-                <p><%= labelNotAssigned %></p>
+                <p><%= labelNotAssigned %><br><%= labelContactAdmin %></p>
             </div>
             <% } else { %>
-            <div class="equb-summary">
+            <div class="group-summary">
                 <div class="group-name"><%= equbInfo.getEqubName() %></div>
                 <div class="detail"><%= String.format("%,.2f", equbInfo.getAmount()) %> ETB - <%= equbInfo.getFrequency() %></div>
                 <div class="detail"><%= equbInfo.getTotalMembers() %> <%= isAm ? "አባላት" : "Members" %></div>
@@ -396,27 +403,39 @@
             <% } %>
         </div>
 
-        <!-- My Idir Group -->
-        <div class="card">
+        <!-- My Idir Group - Clickable Card -->
+        <div class="card clickable-card" onclick="window.location='<%= ctx %>/member/idir-details'">
             <h2><i class="fas fa-heart"></i> <%= labelIdirTitle %></h2>
+            <% if (idirInfo == null) { %>
             <div class="placeholder">
                 <i class="fas fa-hands-helping"></i>
-                <p><%= isAm
-                        ? "እስካሁን ምንም የእድር ቡድን አልተመደበልህም።<br>የማህበረሰብ ድጋፍህ እዚህ ይታያል።"
-                        : "No Idir group assigned yet.<br>Your community support will appear here." %>
-                </p>
+                <p><%= labelNotAssigned %><br><%= labelContactAdmin %></p>
             </div>
+            <% } else { %>
+            <div class="group-summary">
+                <div class="group-name"><%= idirInfo.getIdirName() %></div>
+                <div class="detail"><%= String.format("%,.2f", idirInfo.getMonthlyPayment()) %> ETB <%= isAm ? "ወርሃዊ" : "monthly" %></div>
+                <div class="detail"><%= idirInfo.getTotalMembers() %> <%= isAm ? "አባላት" : "Members" %></div>
+                <div class="detail" style="margin-top: 20px; color: #27ae60; font-weight: bold;">
+                    <%= isAm ? "የፈንድ ቀሪ: " : "Fund Balance: " %> <%= String.format("%,.2f", idirInfo.getFundBalance()) %> ETB
+                </div>
+                <div class="detail" style="margin-top: 20px; color: #1e4d2b; font-weight: bold;">
+                    <%= isAm ? "ዝርዝር ለማየት ጠቅ ያድርጉ" : "Click for details" %> →
+                </div>
+            </div>
+            <% } %>
         </div>
 
-        <!-- Contribution History -->
-        <div class="card">
+        <!-- Contribution History - Clickable Card -->
+        <div class="card clickable-card" onclick="window.location='<%= ctx %>/member/contribution-history'">
             <h2><i class="fas fa-history"></i> <%= labelHistoryTitle %></h2>
-            <div class="placeholder">
-                <i class="fas fa-clock"></i>
-                <p><%= isAm
-                        ? "መዋጮ መጀመሪያ ከተፈጠረ በኋላ የክፍያ ታሪክህ እዚህ ይታያል።"
-                        : "Your payment history will be displayed here once contributions begin." %>
-                </p>
+            <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 18px; color: #1e4d2b; margin-bottom: 20px;">
+                    <%= isAm ? "የመዋጮ ታሪክዎን ይመልከቱ" : "View your full contribution history" %>
+                </div>
+                <div style="color: #1e4d2b; font-weight: bold;">
+                    <%= isAm ? "ሙሉ ታሪክ ለማየት ጠቅ ያድርጉ →" : "Click to see all payments →" %>
+                </div>
             </div>
         </div>
     </div>
@@ -436,15 +455,19 @@
             <tr>
                 <%
                     for (int i = 1; i < firstDayOfWeek; i++) {
-                        out.print("<td></td>");
+                %>
+                <td></td>
+                <%
                     }
                     for (int day = 1; day <= daysInMonth; day++) {
                         String dayClass = (day == currentDay) ? "today" : "";
                 %>
                 <td class="<%= dayClass %>"><%= day %></td>
                 <%
-                        if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
-                            out.print("</tr><tr>");
+                    if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
+                %>
+            </tr><tr>
+                <%
                         }
                     }
                 %>
