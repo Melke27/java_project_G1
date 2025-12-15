@@ -15,12 +15,11 @@
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/admin-dashboard.css">
 </head>
 <body>
-<<<<<<< HEAD
 
 <%
     Member currentUser = (Member) session.getAttribute("user");
     if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
-        response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+        response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
 
@@ -28,6 +27,10 @@
     String error = (String) session.getAttribute("error");
     session.removeAttribute("message");
     session.removeAttribute("error");
+
+    String dashboardError = (String) request.getAttribute("dashboardError");
+    Integer equbGroupsCount = (Integer) request.getAttribute("equbGroupsCount");
+    Integer idirGroupsCount = (Integer) request.getAttribute("idirGroupsCount");
 
     MemberDAO memberDAO = new MemberDAO();
     List<Member> allMembers = memberDAO.getAllMembers();
@@ -38,6 +41,9 @@
             regularMembers.add(m);
         }
     }
+
+    int safeEqubGroups = equbGroupsCount == null ? 0 : equbGroupsCount;
+    int safeIdirGroups = idirGroupsCount == null ? 0 : idirGroupsCount;
 %>
 
 <div class="dashboard-container">
@@ -52,6 +58,13 @@
             </a>
         </div>
     </div>
+
+    <% if (dashboardError != null) { %>
+    <div style="background:#f8d7da;color:#721c24;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #f5c6cb;font-weight:600;">
+        <i class="fas fa-exclamation-circle fa-lg" style="margin-right:10px;"></i>
+        <%= dashboardError %>
+    </div>
+    <% } %>
 
     <% if (message != null) { %>
     <div style="background:#d4edda;color:#155724;padding:18px;border-radius:12px;margin:20px 0;text-align:center;border:1px solid #c3e6cb;font-weight:600;">
@@ -77,12 +90,16 @@
 
         <div class="card">
             <h2><i class="fas fa-handshake"></i> Active Equb Groups</h2>
-            <p class="placeholder">Data coming soon</p>
+            <p class="info-item" style="font-size: 36px; text-align: center; margin: 20px 0; color: #1e4d2b;">
+                <%= safeEqubGroups %>
+            </p>
         </div>
 
         <div class="card">
             <h2><i class="fas fa-heart"></i> Active Idir Groups</h2>
-            <p class="placeholder">Data coming soon</p>
+            <p class="info-item" style="font-size: 36px; text-align: center; margin: 20px 0; color: #1e4d2b;">
+                <%= safeIdirGroups %>
+            </p>
         </div>
 
         <div class="card">
@@ -145,83 +162,6 @@
             </tbody>
         </table>
         <% } %>
-=======
-<%
-    Integer membersCount = (Integer) request.getAttribute("membersCount");
-    Integer equbGroupsCount = (Integer) request.getAttribute("equbGroupsCount");
-    Integer idirGroupsCount = (Integer) request.getAttribute("idirGroupsCount");
-    Integer equbUnpaidCount = (Integer) request.getAttribute("equbUnpaidCount");
-    Integer idirUnpaidCount = (Integer) request.getAttribute("idirUnpaidCount");
-    Integer idirExpensesCount = (Integer) request.getAttribute("idirExpensesCount");
-    Double idirExpensesTotal = (Double) request.getAttribute("idirExpensesTotal");
-    String dashboardError = (String) request.getAttribute("dashboardError");
-
-    int safeMembers = membersCount == null ? 0 : membersCount;
-    int safeEqubGroups = equbGroupsCount == null ? 0 : equbGroupsCount;
-    int safeIdirGroups = idirGroupsCount == null ? 0 : idirGroupsCount;
-    int safeEqubUnpaid = equbUnpaidCount == null ? 0 : equbUnpaidCount;
-    int safeIdirUnpaid = idirUnpaidCount == null ? 0 : idirUnpaidCount;
-    int safeIdirExpensesCount = idirExpensesCount == null ? 0 : idirExpensesCount;
-    double safeIdirExpensesTotal = idirExpensesTotal == null ? 0.0 : idirExpensesTotal;
-%>
-
-<div class="container">
-    <div class="header-row">
-        <h1>Admin Dashboard</h1>
-        <div>
-            <a class="btn" href="<%=request.getContextPath()%>/logout">Logout</a>
-        </div>
-    </div>
-
-    <% if (dashboardError != null) { %>
-        <div class="alert alert-danger"><%= dashboardError %></div>
-    <% } %>
-
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="stat-label">Total Members</div>
-            <div class="stat-value"><%= safeMembers %></div>
-            <div class="stat-sub"><a class="link" href="<%=request.getContextPath()%>/admin/members">Manage members</a></div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">Equb Groups</div>
-            <div class="stat-value"><%= safeEqubGroups %></div>
-            <div class="stat-sub"><a class="link" href="<%=request.getContextPath()%>/admin/equb">Open Equb</a></div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">Idir Groups</div>
-            <div class="stat-value"><%= safeIdirGroups %></div>
-            <div class="stat-sub"><a class="link" href="<%=request.getContextPath()%>/admin/idir">Open Idir</a></div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">Idir Expenses (Total)</div>
-            <div class="stat-value"><%= String.format("%.2f", safeIdirExpensesTotal) %></div>
-            <div class="stat-sub"><%= safeIdirExpensesCount %> records • <a class="link" href="<%=request.getContextPath()%>/admin/expenses">Manage expenses</a></div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>Quick Actions</h2>
-            <div class="nav">
-                <a class="btn btn-primary" href="<%=request.getContextPath()%>/admin/members">Member Management</a>
-                <a class="btn btn-primary" href="<%=request.getContextPath()%>/admin/equb">Equb Management</a>
-                <a class="btn btn-primary" href="<%=request.getContextPath()%>/admin/idir">Idir Management</a>
-                <a class="btn btn-primary" href="<%=request.getContextPath()%>/admin/expenses">Idir Expenses</a>
-            </div>
-            <p class="muted">Tip: open a group to approve payments and generate rotations.</p>
-        </div>
-
-        <div class="card">
-            <h2>Payment Alerts</h2>
-            <p>Equb unpaid members: <strong><%= safeEqubUnpaid %></strong></p>
-            <p>Idir unpaid members: <strong><%= safeIdirUnpaid %></strong></p>
-            <p class="muted">Approve payments inside each group screen.</p>
-        </div>
->>>>>>> origin/main
     </div>
 </div>
 
