@@ -161,3 +161,33 @@ body {
 
 .delete-btn { color: #e74c3c; }
 .delete-btn:hover { color: #c0392b; }
+
+/* Admin top navigation */
+.admin-nav {
+    background: #1e4d2b;
+    color: #fff;
+    padding: 12px 30px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.admin-nav a {
+    color: #f9fafb;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.admin-nav a:hover {
+    background: rgba(249, 250, 251, 0.16);
+}
+
+.admin-nav a.active {
+    background: #c9a227;
+    color: #111827;
+}

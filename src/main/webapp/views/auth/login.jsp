@@ -20,13 +20,53 @@
             border: 1px solid #ffbaba;
         }
     </style>
+    <style>
+        .lang-switch {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            font-size: 14px;
+        }
+        .lang-switch a {
+            color: #555;
+            text-decoration: none;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+        .lang-switch a.active {
+            color: #111;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
+<%
+    String lang = (String) session.getAttribute("lang");
+    if (lang == null) lang = "en";
+    boolean isAm = "am".equals(lang);
+
+    // Pre-build placeholder strings to avoid complex expressions inside attributes
+    String phonePlaceholder = isAm
+            ? "ስልክ ቁጥር (ለምሳሌ 0911223344)"
+            : "Phone Number (e.g. 0911223344)";
+    String passwordPlaceholder = isAm
+            ? "የይለፍ ቃል"
+            : "Password";
+%>
 <div class="container">
+    <div class="lang-switch">
+        <span><%= isAm ? "ቋንቋ" : "Language" %>:</span>
+        <a href="<%= request.getContextPath() %>/lang?lang=en" class="<%= !isAm ? "active" : "" %>">English</a>|
+        <a href="<%= request.getContextPath() %>/lang?lang=am" class="<%= isAm ? "active" : "" %>">አማርኛ</a>
+    </div>
     <div class="form-section">
         <div class="logo">Equb & Idir</div>
-        <p class="tagline">Securely manage your traditional savings and community support groups</p>
-        <h1>Login to Your Account</h1>
+        <p class="tagline">
+            <%= isAm
+                    ? "የባህላዊ እቁብንና እድርን በዘመናዊ መንገድ የሚያስተዳድር የደህንነት ስርዓት"
+                    : "Securely manage your traditional savings and community support groups" %>
+        </p>
+        <h1><%= isAm ? "ወደ መለያህ ግባ" : "Login to Your Account" %></h1>
 
         <%
             String error = (String) request.getAttribute("error");
@@ -45,27 +85,47 @@
         <form action="<%= request.getContextPath() %>/login" method="post">
             <div class="input-group">
                 <i class="fas fa-phone"></i>
-                <input type="tel" name="phone" placeholder="Phone Number (e.g. 0911223344)" required>
+                <input type="tel" name="phone"
+                       placeholder="<%= phonePlaceholder %>"
+                       required>
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" name="password" placeholder="Password" required>
+                <input type="password" name="password"
+                       placeholder="<%= passwordPlaceholder %>" required>
             </div>
-            <button type="submit" class="submit-btn">Sign In</button>
-            <p class="signin-link">Don't have an account? <a href="<%= request.getContextPath() %>/register">Sign up</a></p>
+            <button type="submit" class="submit-btn">
+                <%= isAm ? "ግባ" : "Sign In" %>
+            </button>
         </form>
     </div>
     <div class="info-section">
         <div class="info-content">
-            <h2>Welcome Back!</h2>
-            <p>Access your Equb and Idir groups with secure, modern tools that honor Ethiopian traditions.</p>
+            <h2><%= isAm ? "እንኳን በደህና መጡ!" : "Welcome Back!" %></h2>
+            <p>
+                <%= isAm
+                        ? "እቁብና እድር ቡድኖችህን ባህላዊ እሴቶችን በመከበር በደህንነት እና በዘመናዊ መንገድ አስተዳድር።"
+                        : "Access your Equb and Idir groups with secure, modern tools that honor Ethiopian traditions." %>
+            </p>
             <ul class="features">
-                <li><i class="fas fa-check-circle"></i> Instant access to contributions and payouts</li>
-                <li><i class="fas fa-check-circle"></i> View schedules and member updates</li>
-                <li><i class="fas fa-check-circle"></i> Transparent and tamper-proof records</li>
-                <li><i class="fas fa-check-circle"></i> Real-time notifications</li>
+                <li><i class="fas fa-check-circle"></i>
+                    <%= isAm ? "ወዲያውኑ የመዋጮና የክፍያ መረጃ መመልከት" : "Instant access to contributions and payouts" %>
+                </li>
+                <li><i class="fas fa-check-circle"></i>
+                    <%= isAm ? "መርሃግብሮችንና የአባላት ማሻሻያዎችን በቀላሉ መመልከት" : "View schedules and member updates" %>
+                </li>
+                <li><i class="fas fa-check-circle"></i>
+                    <%= isAm ? "ግልጽ እና እማኝ መዝገቦች" : "Transparent and tamper-proof records" %>
+                </li>
+                <li><i class="fas fa-check-circle"></i>
+                    <%= isAm ? "በቅርብ ጊዜ ማሳወቂያዎች" : "Real-time notifications" %>
+                </li>
             </ul>
-            <p class="footer-text">Preserving community trust in the digital age.</p>
+            <p class="footer-text">
+                <%= isAm
+                        ? "የማህበረሰብ እምነትን በዲጂታል ዘመን ማከበር የምንረዳበት መድረክ።"
+                        : "Preserving community trust in the digital age." %>
+            </p>
         </div>
     </div>
 </div>

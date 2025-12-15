@@ -120,6 +120,16 @@
         <url-pattern>/change-password</url-pattern>
     </servlet-mapping>
 
+    <!-- Language Switcher -->
+    <servlet>
+        <servlet-name>LanguageServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.LanguageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LanguageServlet</servlet-name>
+        <url-pattern>/lang</url-pattern>
+    </servlet-mapping>
+
     <!-- Welcome File -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

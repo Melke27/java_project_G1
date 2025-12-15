@@ -33,6 +33,22 @@
             font-weight: 600;
             font-size: 16px;
         }
+        .lang-switch {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            font-size: 14px;
+        }
+        .lang-switch a {
+            color: #555;
+            text-decoration: none;
+            margin: 0 8px;
+            font-weight: 600;
+        }
+        .lang-switch a.active {
+            color: #1e4d2b;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -44,14 +60,18 @@
         return;
     }
 
-    // Read messages from request attributes (servlets use forward)
+    String lang = (String) session.getAttribute("lang");
+    if (lang == null) lang = "en";
+    boolean isAm = "am".equals(lang);
+
+    // Read messages from request attributes
     String success = (String) request.getAttribute("success");
     String error = (String) request.getAttribute("error");
     String passwordSuccess = (String) request.getAttribute("passwordSuccess");
     String passwordError = (String) request.getAttribute("passwordError");
 
-    // Determine which tab should be active
-    String activeTab = "personal"; // default
+    // Determine active tab
+    String activeTab = "personal";
     if (passwordSuccess != null || passwordError != null) {
         activeTab = "password";
     } else if (success != null || error != null) {
@@ -64,27 +84,39 @@
 %>
 
 <div class="profile-container">
+    <div class="lang-switch">
+        <span><%= isAm ? "ቋንቋ" : "Language" %>:</span>
+        <a href="<%= request.getContextPath() %>/lang?lang=en" class="<%= !isAm ? "active" : "" %>">English</a> |
+        <a href="<%= request.getContextPath() %>/lang?lang=am" class="<%= isAm ? "active" : "" %>">አማርኛ</a>
+    </div>
+
     <div class="header">
-        <h1>My Profile</h1>
+        <h1><%= isAm ? "የግል መረጃዬ" : "My Profile" %></h1>
         <div class="btn-group">
             <a href="<%= request.getContextPath() %><%= dashboardPath %>" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                <i class="fas fa-arrow-left"></i>
+                <%= isAm ? "ወደ ዳሽቦርድ ተመለስ" : "Back to Dashboard" %>
             </a>
             <a href="<%= request.getContextPath() %>/logout" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
+                <i class="fas fa-sign-out-alt"></i>
+                <%= isAm ? "ውጣ" : "Logout" %>
             </a>
         </div>
     </div>
 
     <div class="profile-card">
         <div class="tab-buttons">
-            <button class="tab-btn <%= "personal".equals(activeTab) ? "active" : "" %>" onclick="openTab('personal')">Personal Information</button>
-            <button class="tab-btn <%= "password".equals(activeTab) ? "active" : "" %>" onclick="openTab('password')">Change Password</button>
+            <button class="tab-btn <%= "personal".equals(activeTab) ? "active" : "" %>" onclick="openTab('personal')">
+                <%= isAm ? "የግል መረጃ" : "Personal Information" %>
+            </button>
+            <button class="tab-btn <%= "password".equals(activeTab) ? "active" : "" %>" onclick="openTab('password')">
+                <%= isAm ? "የይለፍ ቃል ቀይር" : "Change Password" %>
+            </button>
         </div>
 
         <!-- Personal Information Tab -->
         <div id="personal" class="tab-content <%= "personal".equals(activeTab) ? "active" : "" %>">
-            <h2><i class="fas fa-user-edit"></i> Personal Information</h2>
+            <h2><i class="fas fa-user-edit"></i> <%= isAm ? "የግል መረጃ" : "Personal Information" %></h2>
 
             <% if (success != null) { %>
             <div class="success-message">
@@ -102,29 +134,32 @@
 
             <form action="<%= request.getContextPath() %>/profile" method="post">
                 <div class="form-group">
-                    <label for="fullName">Full Name</label>
+                    <label for="fullName"><%= isAm ? "ሙሉ ስም" : "Full Name" %></label>
                     <input type="text" id="fullName" name="fullName"
                            value="<%= user.getFullName() != null ? user.getFullName() : "" %>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Phone Number</label>
+                    <label for="phone"><%= isAm ? "ስልክ ቁጥር" : "Phone Number" %></label>
                     <input type="tel" id="phone" name="phone"
                            value="<%= user.getPhone() != null ? user.getPhone() : "" %>" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="address">Address (City, Kebele, House No.)</label>
+                    <label for="address">
+                        <%= isAm ? "አድራሻ (ከተማ፣ ቀበሌ፣ ቤት ቁጥር)" : "Address (City, Kebele, House No.)" %>
+                    </label>
                     <input type="text" id="address" name="address"
                            value="<%= user.getAddress() != null ? user.getAddress() : "" %>">
                 </div>
 
                 <div class="btn-group">
                     <button type="submit" class="save-btn">
-                        <i class="fas fa-save"></i> Save Changes
+                        <i class="fas fa-save"></i>
+                        <%= isAm ? "ለውጦችን አስቀምጥ" : "Save Changes" %>
                     </button>
                     <a href="<%= request.getContextPath() %><%= dashboardPath %>" class="cancel-btn">
-                        Cancel
+                        <%= isAm ? "ተው" : "Cancel" %>
                     </a>
                 </div>
             </form>
@@ -132,7 +167,7 @@
 
         <!-- Change Password Tab -->
         <div id="password" class="tab-content <%= "password".equals(activeTab) ? "active" : "" %>">
-            <h2><i class="fas fa-key"></i> Change Password</h2>
+            <h2><i class="fas fa-key"></i> <%= isAm ? "የይለፍ ቃል ቀይር" : "Change Password" %></h2>
 
             <% if (passwordSuccess != null) { %>
             <div class="success-message">
@@ -150,7 +185,7 @@
 
             <form action="<%= request.getContextPath() %>/change-password" method="post">
                 <div class="form-group">
-                    <label for="currentPassword">Current Password</label>
+                    <label for="currentPassword"><%= isAm ? "አሁን ያለው የይለፍ ቃል" : "Current Password" %></label>
                     <div style="position: relative;">
                         <input type="password" id="currentPassword" name="currentPassword" required>
                         <i class="fas fa-eye toggle-password" onclick="togglePass('currentPassword')"></i>
@@ -158,7 +193,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="newPassword">New Password</label>
+                    <label for="newPassword"><%= isAm ? "አዲስ የይለፍ ቃል" : "New Password" %></label>
                     <div style="position: relative;">
                         <input type="password" id="newPassword" name="newPassword" required>
                         <i class="fas fa-eye toggle-password" onclick="togglePass('newPassword')"></i>
@@ -166,7 +201,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <label for="confirmNewPassword"><%= isAm ? "አዲሱን የይለፍ ቃል ደግመህ ጻፍ" : "Confirm New Password" %></label>
                     <div style="position: relative;">
                         <input type="password" id="confirmNewPassword" name="confirmNewPassword" required>
                         <i class="fas fa-eye toggle-password" onclick="togglePass('confirmNewPassword')"></i>
@@ -175,7 +210,8 @@
 
                 <div class="btn-group">
                     <button type="submit" class="save-btn">
-                        <i class="fas fa-lock"></i> Update Password
+                        <i class="fas fa-lock"></i>
+                        <%= isAm ? "የይለፍ ቃል አዘምን" : "Update Password" %>
                     </button>
                 </div>
             </form>

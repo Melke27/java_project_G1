@@ -12,8 +12,21 @@
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/admin-dashboard.css">
 </head>
 <body>
-
 <%
+    String lang = (String) session.getAttribute("lang");
+    if (lang == null) lang = "en";
+    boolean isAm = "am".equals(lang);
+    String ctx = request.getContextPath();
+    String enClass = isAm ? "" : "active";
+    String amClass = isAm ? "active" : "";
+    String labelLanguage = isAm ? "ቋንቋ" : "Language";
+    String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
+    String labelMembers = isAm ? "አባላት" : "Members";
+    String labelEqub = isAm ? "እቁብ" : "Equb";
+    String labelIdir = isAm ? "እድር" : "Idir";
+    String labelExpenses = isAm ? "ወጪዎች" : "Expenses";
+    String labelReports = isAm ? "ሪፖርቶች" : "Reports";
+
     Member currentUser = (Member) session.getAttribute("user");
     if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
         response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
@@ -25,6 +38,20 @@
     session.removeAttribute("message");
     session.removeAttribute("error");
 %>
+
+<div class="admin-nav">
+    <div class="lang-switch">
+        <span><%= labelLanguage %>:</span>
+        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a>|
+        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
+    </div>
+    <a href="<%= ctx %>/admin/dashboard"><%= labelDashboard %></a>
+    <a href="<%= ctx %>/admin/members" class="active"><%= labelMembers %></a>
+    <a href="<%= ctx %>/admin/equb"><%= labelEqub %></a>
+    <a href="<%= ctx %>/admin/idir"><%= labelIdir %></a>
+    <a href="<%= ctx %>/admin/expenses"><%= labelExpenses %></a>
+    <a href="<%= ctx %>/views/admin/reports.jsp"><%= labelReports %></a>
+</div>
 
 <div class="dashboard-container">
     <div class="header">

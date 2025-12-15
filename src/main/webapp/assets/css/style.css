@@ -104,6 +104,36 @@ th, td {
 
 .nav { margin: 10px 0; }
 
+/* Admin top navigation (shared style) */
+.admin-nav {
+    background: #111827;
+    color: #f9fafb;
+    padding: 10px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.admin-nav a {
+    color: #e5e7eb;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.admin-nav a:hover {
+    background: rgba(249, 250, 251, 0.12);
+}
+
+.admin-nav a.active {
+    background: #2563eb;
+    color: #f9fafb;
+}
+
 /* Dashboard */
 .stat-grid {
     display: grid;

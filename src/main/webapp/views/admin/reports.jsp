@@ -7,6 +7,36 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body>
+<%
+    String lang = (String) session.getAttribute("lang");
+    if (lang == null) lang = "en";
+    boolean isAm = "am".equals(lang);
+    String ctx = request.getContextPath();
+    String enClass = isAm ? "" : "active";
+    String amClass = isAm ? "active" : "";
+    String labelLanguage = isAm ? "ቋንቋ" : "Language";
+    String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
+    String labelMembers = isAm ? "አባላት" : "Members";
+    String labelEqub = isAm ? "እቁብ" : "Equb";
+    String labelIdir = isAm ? "እድር" : "Idir";
+    String labelExpenses = isAm ? "ወጪዎች" : "Expenses";
+    String labelReports = isAm ? "ሪፖርቶች" : "Reports";
+%>
+
+<div class="admin-nav">
+    <div class="lang-switch">
+        <span><%= labelLanguage %>:</span>
+        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a>|
+        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
+    </div>
+    <a href="<%= ctx %>/admin/dashboard"><%= labelDashboard %></a>
+    <a href="<%= ctx %>/admin/members"><%= labelMembers %></a>
+    <a href="<%= ctx %>/admin/equb"><%= labelEqub %></a>
+    <a href="<%= ctx %>/admin/idir"><%= labelIdir %></a>
+    <a href="<%= ctx %>/admin/expenses"><%= labelExpenses %></a>
+    <a href="<%= ctx %>/views/admin/reports.jsp" class="active"><%= labelReports %></a>
+</div>
+
 <h2>Reports</h2>
 
 <section>
