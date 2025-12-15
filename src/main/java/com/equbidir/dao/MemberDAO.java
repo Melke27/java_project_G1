@@ -3,6 +3,7 @@ package com.equbidir.dao;
 import com.equbidir.model.Member;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
+import com.equbidir.model.EqubMemberInfo;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -140,7 +141,6 @@ public class MemberDAO {
         }
     }
 
-    // NEW: Verify current password for change password feature
     public boolean verifyCurrentPassword(int memberId, String plainPassword) throws SQLException {
         String sql = "SELECT password_hash FROM members WHERE member_id = ?";
         try (Connection con = DatabaseConnection.getConnection();
@@ -157,7 +157,6 @@ public class MemberDAO {
         return false;
     }
 
-    // NEW: Get member with password hash (alternative if needed)
     public String getPasswordHash(int memberId) throws SQLException {
         String sql = "SELECT password_hash FROM members WHERE member_id = ?";
         try (Connection con = DatabaseConnection.getConnection();
@@ -167,6 +166,46 @@ public class MemberDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("password_hash");
+                }
+            }
+        }
+        return null;
+    }
+
+    public EqubMemberInfo getMemberEqubInfo(int memberId) throws SQLException {
+        String sql = """
+            SELECT 
+                eg.equb_id,
+                eg.equb_name,
+                eg.amount,
+                eg.frequency,
+                em.rotation_position,
+                em.payment_status,
+                (SELECT COUNT(*) FROM equb_members em2 WHERE em2.equb_id = eg.equb_id) AS total_members
+            FROM equb_members em
+            JOIN equb_groups eg ON em.equb_id = eg.equb_id
+            WHERE em.member_id = ?
+            """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Integer rotationPos = rs.getObject("rotation_position") != null
+                            ? rs.getInt("rotation_position")
+                            : null;
+
+                    return new EqubMemberInfo(
+                            rs.getInt("equb_id"),
+                            rs.getString("equb_name"),
+                            rs.getDouble("amount"),
+                            rs.getString("frequency"),
+                            rotationPos,
+                            rs.getString("payment_status"),
+                            rs.getInt("total_members")
+                    );
                 }
             }
         }

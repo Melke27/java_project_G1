@@ -1,9 +1,6 @@
 <%@ page import="com.equbidir.model.Member" %>
-<%@ page import="com.equbidir.dao.MemberDAO" %>
 <%@ page import="com.equbidir.model.EqubMemberInfo" %>
-<%@ page import="java.util.Calendar" %>
-<%@ page import="java.text.SimpleDateFormat" %>
-<%@ page import="java.util.Locale" %>
+<%@ page import="com.equbidir.dao.MemberDAO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
@@ -11,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard - Equb & Idir</title>
+    <title>My Equb Group - Equb & Idir</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/dashboard.css">
@@ -182,98 +179,70 @@
             margin: 0;
             font-size: 28px;
         }
-        .welcome-header div {
-            color: #666;
-            font-size: 16px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
         .card {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-        }
-        .card:hover {
-            transform: translateY(-8px);
+            margin-bottom: 30px;
         }
         .card h2 {
             color: #1e4d2b;
             border-bottom: 2px solid #c9a227;
             padding-bottom: 12px;
-            margin-top: 0;
-            font-size: 22px;
         }
         .placeholder {
             text-align: center;
             color: #888;
-            padding: 40px 20px;
+            padding: 60px 20px;
+            font-size: 18px;
         }
         .placeholder i {
-            font-size: 48px;
+            font-size: 64px;
             color: #c9a227;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .equb-card {
-            cursor: pointer;
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
         }
-        .equb-summary {
+        .info-item {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
             text-align: center;
-            padding: 20px 0;
         }
-        .equb-summary .group-name {
-            font-size: 24px;
-            font-weight: bold;
+        .info-item strong {
             color: #1e4d2b;
-            margin: 10px 0;
-        }
-        .equb-summary .detail {
+            display: block;
+            margin-bottom: 8px;
             font-size: 16px;
-            color: #636e72;
-            margin: 8px 0;
         }
-        .calendar-card {
-            grid-column: 1 / -1;
-            margin-top: 20px;
+        .info-item span {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3436;
         }
-        .calendar {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+        .highlight {
+            color: #c9a227;
+            font-size: 28px;
+            font-weight: bold;
         }
-        .calendar th, .calendar td {
-            text-align: center;
-            padding: 12px;
-            border: 1px solid #eee;
-            font-size: 14px;
-        }
-        .calendar th {
+        .back-btn {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 12px 24px;
             background: #1e4d2b;
             color: white;
+            text-decoration: none;
+            border-radius: 12px;
             font-weight: 600;
         }
-        .calendar td.today {
+        .back-btn:hover {
             background: #c9a227;
-            color: white;
-            font-weight: bold;
-            border-radius: 8px;
-        }
-        @media (max-width: 768px) {
-            .calendar th, .calendar td {
-                padding: 8px;
-                font-size: 13px;
-            }
-        }
-        @media (max-width: 480px) {
-            .calendar th, .calendar td {
-                padding: 6px;
-                font-size: 12px;
-            }
+            color: #1e4d2b;
         }
     </style>
 </head>
@@ -282,7 +251,7 @@
 <%
     Member user = (Member) session.getAttribute("user");
     if (user == null) {
-        response.sendRedirect(request.getContextPath() + "/login");
+        response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
         return;
     }
 
@@ -292,30 +261,22 @@
 
     String ctx = request.getContextPath();
 
+    MemberDAO memberDAO = new MemberDAO();
+    EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
+
     String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
     String labelProfile = isAm ? "የግል መረጃዬ" : "My Profile";
     String labelLogout = isAm ? "ውጣ" : "Logout";
     String labelMyEqub = isAm ? "የእቁብ ቡድኔ" : "My Equb Group";
-    String labelWelcome = isAm ? "እንኳን በደህና መጡ፣ " : "Welcome back, ";
-    String labelPersonalInfo = isAm ? "የግል መረጃ" : "Personal Information";
-    String labelEqubTitle = isAm ? "የእቁብ ቡድኖቼ" : "My Equb Groups";
-    String labelIdirTitle = isAm ? "የእድር ቡድኔ" : "My Idir Group";
-    String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
-    String labelCalendar = isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar";
-    String labelNotAssigned = isAm ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።" : "No Equb groups assigned yet.<br>Contact your admin to join one.";
-
-    MemberDAO memberDAO = new MemberDAO();
-    EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId());
-
-    Calendar cal = Calendar.getInstance();
-    int currentDay = cal.get(Calendar.DAY_OF_MONTH);
-    cal.set(Calendar.DAY_OF_MONTH, 1);
-    int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-    int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-    String[] daysAm = {"እሑድ", "ሰኞ", "ማክሰኞ", "ረቡዕ", "ሐሙስ", "ዓርብ", "ቅዳሜ"};
-    String[] daysEn = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    String[] days = isAm ? daysAm : daysEn;
+    String labelNotAssigned = isAm ? "እስካሁን ወደ ምንም የእቁብ ቡድን አልተመደቡም።" : "You are not assigned to any Equb group yet.";
+    String labelContactAdmin = isAm ? "ለመቀላቀል አስተዳዳሪዎን ያነጋግሩ።" : "Contact your administrator to join one.";
+    String labelGroupName = isAm ? "የቡድን ስም" : "Group Name";
+    String labelContribution = isAm ? "የመዋጮ መጠን" : "Contribution Amount";
+    String labelFrequency = isAm ? "ድግግሞሽ" : "Frequency";
+    String labelTotalMembers = isAm ? "ጠቅላላ አባላት" : "Total Members";
+    String labelYourPosition = isAm ? "የእርስዎ ቦታ" : "Your Position";
+    String labelPaymentStatus = isAm ? "የክፍያ ሁኔታ" : "Payment Status";
+    String labelBack = isAm ? "ወደ ዳሽቦርድ" : "Back to Dashboard";
 %>
 
 <!-- Dark Overlay -->
@@ -332,8 +293,8 @@
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/views/member/dashboard.jsp" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
-        <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
+        <li><a href="<%= ctx %>/views/member/dashboard.jsp"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/member/equb-details" class="active"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
         <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
     </ul>
@@ -356,102 +317,72 @@
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
     <div class="welcome-header">
-        <h1><%= labelWelcome %><%= user.getFullName() %>!</h1>
-        <div>
-            <i class="fas fa-calendar-day"></i>
-            <%= new SimpleDateFormat(isAm ? "dd MMMM yyyy" : "MMMM dd, yyyy", isAm ? new Locale("am", "ET") : Locale.ENGLISH)
-                    .format(new java.util.Date()) %>
-        </div>
+        <h1><%= labelMyEqub %></h1>
+        <a href="<%= request.getContextPath() %>/views/member/dashboard.jsp" class="back-btn">
+            <i class="fas fa-arrow-left"></i> <%= labelBack %>
+        </a>
     </div>
 
-    <div class="grid">
-        <!-- Personal Information -->
-        <div class="card">
-            <h2><i class="fas fa-user"></i> <%= labelPersonalInfo %></h2>
-            <div class="info-item"><strong>Full Name:</strong> <%= user.getFullName() %></div>
-            <div class="info-item"><strong>Phone:</strong> <%= user.getPhone() %></div>
-            <div class="info-item"><strong>Member ID:</strong> #<%= user.getMemberId() %></div>
-            <div class="info-item"><strong>Role:</strong>
-                <%= "admin".equalsIgnoreCase(user.getRole()) ? (isAm ? "አስተዳዳሪ" : "Administrator") : (isAm ? "አባል" : "Member") %>
-            </div>
-        </div>
-
-        <!-- My Equb Groups - Clickable Card -->
-        <div class="card equb-card" onclick="window.location='<%= ctx %>/member/equb-details'">
-            <h2><i class="fas fa-handshake"></i> <%= labelEqubTitle %></h2>
-            <% if (equbInfo == null) { %>
-            <div class="placeholder">
-                <i class="fas fa-users"></i>
-                <p><%= labelNotAssigned %></p>
-            </div>
-            <% } else { %>
-            <div class="equb-summary">
-                <div class="group-name"><%= equbInfo.getEqubName() %></div>
-                <div class="detail"><%= String.format("%,.2f", equbInfo.getAmount()) %> ETB - <%= equbInfo.getFrequency() %></div>
-                <div class="detail"><%= equbInfo.getTotalMembers() %> <%= isAm ? "አባላት" : "Members" %></div>
-                <div class="detail" style="margin-top: 20px; color: #1e4d2b; font-weight: bold;">
-                    <%= isAm ? "ዝርዝር ለማየት ጠቅ ያድርጉ" : "Click for details" %> →
-                </div>
-            </div>
-            <% } %>
-        </div>
-
-        <!-- My Idir Group -->
-        <div class="card">
-            <h2><i class="fas fa-heart"></i> <%= labelIdirTitle %></h2>
-            <div class="placeholder">
-                <i class="fas fa-hands-helping"></i>
-                <p><%= isAm
-                        ? "እስካሁን ምንም የእድር ቡድን አልተመደበልህም።<br>የማህበረሰብ ድጋፍህ እዚህ ይታያል።"
-                        : "No Idir group assigned yet.<br>Your community support will appear here." %>
-                </p>
-            </div>
-        </div>
-
-        <!-- Contribution History -->
-        <div class="card">
-            <h2><i class="fas fa-history"></i> <%= labelHistoryTitle %></h2>
-            <div class="placeholder">
-                <i class="fas fa-clock"></i>
-                <p><%= isAm
-                        ? "መዋጮ መጀመሪያ ከተፈጠረ በኋላ የክፍያ ታሪክህ እዚህ ይታያል።"
-                        : "Your payment history will be displayed here once contributions begin." %>
-                </p>
-            </div>
-        </div>
+    <% if (equbInfo == null) { %>
+    <div class="card placeholder">
+        <i class="fas fa-users"></i>
+        <p><strong><%= labelNotAssigned %></strong><br><%= labelContactAdmin %></p>
     </div>
+    <% } else { %>
+    <div class="card">
+        <h2><i class="fas fa-handshake"></i> <%= equbInfo.getEqubName() %></h2>
 
-    <!-- Full-Width Monthly Calendar -->
-    <div class="card calendar-card">
-        <h2><i class="fas fa-calendar-alt"></i> <%= labelCalendar %></h2>
-        <table class="calendar">
-            <thead>
-            <tr>
-                <% for (String day : days) { %>
-                <th><%= day %></th>
-                <% } %>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <%
-                    for (int i = 1; i < firstDayOfWeek; i++) {
-                        out.print("<td></td>");
-                    }
-                    for (int day = 1; day <= daysInMonth; day++) {
-                        String dayClass = (day == currentDay) ? "today" : "";
-                %>
-                <td class="<%= dayClass %>"><%= day %></td>
-                <%
-                        if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
-                            out.print("</tr><tr>");
-                        }
-                    }
-                %>
-            </tr>
-            </tbody>
-        </table>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong><%= labelGroupName %></strong>
+                <span><%= equbInfo.getEqubName() %></span>
+            </div>
+            <div class="info-item">
+                <strong><%= labelContribution %></strong>
+                <span><%= String.format("%,.2f", equbInfo.getAmount()) %> ETB</span>
+            </div>
+            <div class="info-item">
+                <strong><%= labelFrequency %></strong>
+                <span><%= equbInfo.getFrequency() %></span>
+            </div>
+            <div class="info-item">
+                <strong><%= labelTotalMembers %></strong>
+                <span><%= equbInfo.getTotalMembers() %></span>
+            </div>
+            <div class="info-item">
+                <strong><%= labelPaymentStatus %></strong>
+                <span class="<%= "paid".equals(equbInfo.getPaymentStatus()) ? "highlight" : "" %>">
+                        <%= "paid".equals(equbInfo.getPaymentStatus())
+                                ? (isAm ? "ተከፍሏል" : "Paid")
+                                : (isAm ? "አልተከፈለም" : "Unpaid") %>
+                    </span>
+            </div>
+        </div>
+
+        <% if (equbInfo.getRotationPosition() != null) { %>
+        <div style="text-align: center; margin: 40px 0; padding: 30px; background: #f8fafc; border-radius: 16px;">
+            <strong style="font-size: 20px; color: #1e4d2b;"><%= labelYourPosition %>:</strong><br>
+            <span class="highlight">
+                        <%= equbInfo.getRotationPosition() %>
+                        <%= isAm ? "ኛ" :
+                                (equbInfo.getRotationPosition() == 1 ? "st" :
+                                        equbInfo.getRotationPosition() == 2 ? "nd" :
+                                                equbInfo.getRotationPosition() == 3 ? "rd" : "th") %>
+                    </span>
+            <p style="margin: 20px 0 0; font-size: 17px; color: #636e72;">
+                <%= isAm
+                        ? "ገንዘቡን በ " + equbInfo.getRotationPosition() + " ወር ውስጥ ትቀበላለህ።"
+                        : "You will receive the pot in " + equbInfo.getRotationPosition() + " month(s)." %>
+            </p>
+        </div>
+        <% } else { %>
+        <div style="text-align: center; padding: 30px; color: #e67e22; background: #fef9e7; border-radius: 16px;">
+            <i class="fas fa-clock" style="font-size: 40px; margin-bottom: 15px;"></i>
+            <p style="font-size: 17px;"><%= isAm ? "የማዞሪያ ቦታዎ ገና አልተወሰነም።" : "Your rotation position has not been set yet." %></p>
+        </div>
+        <% } %>
     </div>
+    <% } %>
 </div>
 
 <script>

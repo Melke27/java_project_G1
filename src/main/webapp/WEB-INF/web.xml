@@ -129,7 +129,14 @@
         <servlet-name>LanguageServlet</servlet-name>
         <url-pattern>/lang</url-pattern>
     </servlet-mapping>
-
+    <servlet>
+        <servlet-name>EqubDetailsServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.EqubDetailsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EqubDetailsServlet</servlet-name>
+        <url-pattern>/member/equb-details</url-pattern>
+    </servlet-mapping>
     <!-- Welcome File -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
