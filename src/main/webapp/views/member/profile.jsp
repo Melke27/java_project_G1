@@ -79,8 +79,8 @@
     }
 
     String dashboardPath = "admin".equalsIgnoreCase(user.getRole())
-            ? "/views/admin/dashboard.jsp"
-            : "/views/member/dashboard.jsp";
+            ? "/admin/dashboard"
+            : "/member/dashboard";
 %>
 
 <div class="profile-container">

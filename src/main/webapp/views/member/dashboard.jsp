@@ -1,8 +1,12 @@
 <%@ page import="com.equbidir.model.Member" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.equbidir.model.EqubMembership" %>
+<%@ page import="com.equbidir.model.IdirMembership" %>
+<%@ page import="com.equbidir.model.Notification" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.Calendar" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Locale" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,33 +18,70 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/dashboard.css">
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 28px;
+            color: #1e4d2b;
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1002;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
         }
         .sidebar {
-            width: 260px;
+            width: 280px;
             background: #1e4d2b;
             color: white;
             padding: 30px 20px;
             position: fixed;
             height: 100%;
-            left: 0;
+            left: -300px;
             top: 0;
             box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            z-index: 100;
+            transition: left 0.4s ease;
+            z-index: 1000;
+        }
+        .sidebar.active {
+            left: 0;
         }
         .sidebar-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
         }
         .sidebar-header h2 {
             margin: 0;
-            font-size: 24px;
+            font-size: 26px;
             color: #c9a227;
         }
         .sidebar-menu {
@@ -48,74 +89,127 @@
             padding: 0;
         }
         .sidebar-menu li {
-            margin: 15px 0;
+            margin: 12px 0;
         }
         .sidebar-menu a {
             color: white;
             text-decoration: none;
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            border-radius: 10px;
+            padding: 14px 18px;
+            border-radius: 12px;
             transition: 0.3s;
+            font-size: 16px;
         }
         .sidebar-menu a:hover, .sidebar-menu a.active {
             background: #c9a227;
             color: #1e4d2b;
         }
         .sidebar-menu i {
-            margin-right: 12px;
-            font-size: 18px;
+            margin-right: 14px;
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
         }
         .main-content {
-            margin-left: 260px;
-            padding: 40px;
-            width: calc(100% - 260px);
+            padding: 20px;
+            width: 100%;
+            transition: filter 0.4s ease;
         }
-        .lang-switch {
-            margin-top: 30px;
+        .main-content.blurred {
+            filter: blur(5px);
+        }
+        .lang-selector {
+            margin-top: 40px;
             text-align: center;
-            font-size: 14px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
         }
-        .lang-switch a {
+        .lang-selector label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
             color: #c9a227;
-            text-decoration: none;
-            margin: 0 8px;
+        }
+        .lang-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .lang-option {
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .lang-option:hover {
+            transform: translateY(-5px);
+        }
+        .lang-option img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 3px solid transparent;
+            transition: 0.3s;
+        }
+        .lang-option:hover img {
+            border-color: #c9a227;
+        }
+        .lang-option span {
+            display: block;
+            margin-top: 8px;
+            font-size: 14px;
             font-weight: 600;
         }
-        .lang-switch a.active {
-            text-decoration: underline;
+        .lang-option.active img {
+            border-color: #c9a227;
+            transform: scale(1.1);
         }
         .welcome-header {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
         }
         .welcome-header h1 {
             color: #1e4d2b;
             margin: 0;
+            font-size: 28px;
+        }
+        .welcome-header div {
+            color: #666;
+            font-size: 16px;
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
+            margin-bottom: 40px;
         }
         .card {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-8px);
         }
         .card h2 {
             color: #1e4d2b;
             border-bottom: 2px solid #c9a227;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             margin-top: 0;
+            font-size: 22px;
         }
         .placeholder {
             text-align: center;
@@ -127,20 +221,43 @@
             color: #c9a227;
             margin-bottom: 15px;
         }
+        .equb-card {
+            cursor: pointer;
+        }
+        .equb-summary {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .equb-summary .group-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e4d2b;
+            margin: 10px 0;
+        }
+        .equb-summary .detail {
+            font-size: 16px;
+            color: #636e72;
+            margin: 8px 0;
+        }
+        .calendar-card {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
         .calendar {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            table-layout: fixed;
+        }
+        .calendar th, .calendar td {
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #eee;
+            font-size: 14px;
         }
         .calendar th {
             background: #1e4d2b;
             color: white;
-            padding: 10px;
-        }
-        .calendar td {
-            text-align: center;
-            padding: 15px;
-            border: 1px solid #eee;
+            font-weight: 600;
         }
         .calendar td.today {
             background: #c9a227;
@@ -148,8 +265,17 @@
             font-weight: bold;
             border-radius: 8px;
         }
-        .calendar td.other-month {
-            color: #ccc;
+        @media (max-width: 768px) {
+            .calendar th, .calendar td {
+                padding: 8px;
+                font-size: 13px;
+            }
+        }
+        @media (max-width: 480px) {
+            .calendar th, .calendar td {
+                padding: 6px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -167,26 +293,33 @@
     boolean isAm = "am".equals(lang);
 
     String ctx = request.getContextPath();
-    String enClass = isAm ? "" : "active";
-    String amClass = isAm ? "active" : "";
 
-    // Labels
     String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
     String labelProfile = isAm ? "የግል መረጃዬ" : "My Profile";
     String labelLogout = isAm ? "ውጣ" : "Logout";
+    String labelMyEqub = isAm ? "የእቁብ ቡድኔ" : "My Equb Group";
     String labelWelcome = isAm ? "እንኳን በደህና መጡ፣ " : "Welcome back, ";
     String labelPersonalInfo = isAm ? "የግል መረጃ" : "Personal Information";
     String labelEqubTitle = isAm ? "የእቁብ ቡድኖቼ" : "My Equb Groups";
     String labelIdirTitle = isAm ? "የእድር ቡድኔ" : "My Idir Group";
     String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
     String labelCalendar = isAm ? "የወሩ ቀን መቁጠሪያ" : "Monthly Calendar";
+    String labelNotifications = isAm ? "ማስታወቂያዎች" : "Notifications";
+    String labelNotAssigned = isAm ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።" : "No Equb groups assigned yet.<br>Contact your admin to join one.";
 
-    // Calendar logic
+    String dashboardError = (String) request.getAttribute("dashboardError");
+
+    List<EqubMembership> equbMemberships = (List<EqubMembership>) request.getAttribute("equbMemberships");
+    if (equbMemberships == null) equbMemberships = java.util.Collections.emptyList();
+
+    List<IdirMembership> idirMemberships = (List<IdirMembership>) request.getAttribute("idirMemberships");
+    if (idirMemberships == null) idirMemberships = java.util.Collections.emptyList();
+
+    List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+    if (notifications == null) notifications = java.util.Collections.emptyList();
+
     Calendar cal = Calendar.getInstance();
-    int currentYear = cal.get(Calendar.YEAR);
-    int currentMonth = cal.get(Calendar.MONTH);
     int currentDay = cal.get(Calendar.DAY_OF_MONTH);
-
     cal.set(Calendar.DAY_OF_MONTH, 1);
     int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
     int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -196,31 +329,49 @@
     String[] days = isAm ? daysAm : daysEn;
 %>
 
+<!-- Dark Overlay -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Hamburger Button -->
+<div class="hamburger" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</div>
+
 <!-- Sidebar -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2>Equb & Idir</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="<%= ctx %>/views/member/dashboard.jsp" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/member/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+        <li><a href="<%= ctx %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
         <li><a href="<%= ctx %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
         <li><a href="<%= ctx %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
     </ul>
-    <div class="lang-switch">
-        <span><%= isAm ? "ቋንቋ" : "Language" %>:</span><br>
-        <a href="<%= ctx %>/lang?lang=en" class="<%= enClass %>">English</a> |
-        <a href="<%= ctx %>/lang?lang=am" class="<%= amClass %>">አማርኛ</a>
+
+    <div class="lang-selector">
+        <label><%= isAm ? "ቋንቋ ይምረጡ" : "Select Language" %></label>
+        <div class="lang-options">
+            <div class="lang-option <%= !isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=en'">
+                <img src="https://flagcdn.com/w80/gb.png" alt="English">
+                <span>English</span>
+            </div>
+            <div class="lang-option <%= isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=am'">
+                <img src="https://flagcdn.com/w80/et.png" alt="አማርኛ">
+                <span>አማርኛ</span>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Main Content -->
-<div class="main-content">
+<div class="main-content" id="mainContent">
     <div class="welcome-header">
         <h1><%= labelWelcome %><%= user.getFullName() %>!</h1>
-        <div style="color: #666;">
+        <div>
             <i class="fas fa-calendar-day"></i>
             <%= new SimpleDateFormat(isAm ? "dd MMMM yyyy" : "MMMM dd, yyyy", isAm ? new Locale("am", "ET") : Locale.ENGLISH)
-                    .format(cal.getTime()) %>
+                    .format(new java.util.Date()) %>
         </div>
     </div>
 
@@ -236,62 +387,81 @@
             </div>
         </div>
 
-        <!-- Calendar -->
+        <!-- Notifications from Admin -->
         <div class="card">
-            <h2><i class="fas fa-calendar-alt"></i> <%= labelCalendar %></h2>
-            <table class="calendar">
-                <thead>
-                <tr>
-                    <% for (String day : days) { %>
-                    <th><%= day %></th>
+            <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
+
+            <% if (dashboardError != null) { %>
+            <div style="background:#fff3cd;color:#856404;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid #ffeeba;font-weight:600;">
+                <i class="fas fa-triangle-exclamation" style="margin-right:10px;"></i>
+                <%= dashboardError %>
+            </div>
+            <% } %>
+
+            <% if (notifications.isEmpty()) { %>
+            <div class="placeholder">
+                <i class="fas fa-envelope-open-text"></i>
+                <p><%= isAm ? "ምንም አዲስ ማስታወቂያ የለም።" : "No new notifications." %></p>
+            </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <% for (Notification n : notifications) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                        <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
+                        <div style="color:#666; font-size:13px; font-weight:700;">
+                            <%= n.getCreatedAt() != null ? new SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+                        </div>
+                    </div>
+                    <div style="color:#666; margin-top:6px;">
+                        <%= n.getMessage() %>
+                    </div>
+                    <% if (n.getCreatedByName() != null) { %>
+                    <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                        <%= isAm ? "ከ" : "From" %>: <%= n.getCreatedByName() %>
+                    </div>
                     <% } %>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <%
-                        // Print empty cells for days before month starts
-                        for (int i = 1; i < firstDayOfWeek; i++) {
-                            out.print("<td class='other-month'></td>");
-                        }
-                        // Print days of month
-                        for (int day = 1; day <= daysInMonth; day++) {
-                            String dayClass = (day == currentDay) ? "today" : "";
-                    %>
-                    <td class="<%= dayClass %>"><%= day %></td>
-                    <%
-                            if ((day + firstDayOfWeek - 1) % 7 == 0) {
-                                out.print("</tr><tr>");
-                            }
-                        }
-                        // Fill remaining cells
-                        int remaining = (daysInMonth + firstDayOfWeek - 1) % 7;
-                        if (remaining != 0) {
-                            for (int i = remaining; i < 7; i++) {
-                                out.print("<td class='other-month'></td>");
-                            }
-                        }
-                    %>
-                </tr>
-                </tbody>
-            </table>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
 
         <!-- My Equb Groups -->
         <div class="card">
             <h2><i class="fas fa-handshake"></i> <%= labelEqubTitle %></h2>
+            <% if (equbMemberships.isEmpty()) { %>
             <div class="placeholder">
                 <i class="fas fa-users"></i>
-                <p><%= isAm
-                        ? "እስካሁን ምንም የእቁብ ቡድን አልተመደበልህም።<br>ለመቀላቀል ከአስተዳዳሪዎ ጋር ያነጋግሩ።"
-                        : "No Equb groups assigned yet.<br>Contact your admin to join one." %>
-                </p>
+                <p><%= labelNotAssigned %></p>
             </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <% for (EqubMembership em : equbMemberships) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:800; color:#1e4d2b;"><%= em.getEqubName() %></div>
+                        <div style="color:#666; font-size:14px;">
+                            <%= String.format("%,.2f", em.getAmount()) %> ETB • <%= em.getFrequency() %> • <%= em.getPaymentStatus() %>
+                            <% if (em.getRotationPosition() != null) { %>
+                                • <%= isAm ? "ቦታ" : "Pos" %>: <%= em.getRotationPosition() %>
+                            <% } %>
+                        </div>
+                    </div>
+                    <a href="<%= ctx %>/member/equb-details?equb_id=<%= em.getEqubId() %>"
+                       style="text-decoration:none; background:#1e4d2b; color:white; padding:10px 14px; border-radius:999px; font-weight:700;">
+                        <%= isAm ? "ዝርዝር" : "Details" %>
+                    </a>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
 
-        <!-- My Idir Group -->
+        <!-- My Idir Group(s) -->
         <div class="card">
             <h2><i class="fas fa-heart"></i> <%= labelIdirTitle %></h2>
+            <% if (idirMemberships.isEmpty()) { %>
             <div class="placeholder">
                 <i class="fas fa-hands-helping"></i>
                 <p><%= isAm
@@ -299,6 +469,18 @@
                         : "No Idir group assigned yet.<br>Your community support will appear here." %>
                 </p>
             </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+                <% for (IdirMembership im : idirMemberships) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="font-weight:800; color:#1e4d2b;"><%= im.getIdirName() %></div>
+                    <div style="color:#666; font-size:14px; margin-top:6px;">
+                        <%= String.format("%,.2f", im.getMonthlyPayment()) %> ETB • <%= im.getPaymentStatus() %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
 
         <!-- Contribution History -->
@@ -313,7 +495,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Full-Width Monthly Calendar -->
+    <div class="card calendar-card">
+        <h2><i class="fas fa-calendar-alt"></i> <%= labelCalendar %></h2>
+        <table class="calendar">
+            <thead>
+            <tr>
+                <% for (String day : days) { %>
+                <th><%= day %></th>
+                <% } %>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <%
+                    for (int i = 1; i < firstDayOfWeek; i++) {
+                        out.print("<td></td>");
+                    }
+                    for (int day = 1; day <= daysInMonth; day++) {
+                        String dayClass = (day == currentDay) ? "today" : "";
+                %>
+                <td class="<%= dayClass %>"><%= day %></td>
+                <%
+                        if ((day + firstDayOfWeek - 1) % 7 == 0 && day != daysInMonth) {
+                            out.print("</tr><tr>");
+                        }
+                    }
+                %>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.getElementById('mainContent');
+
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        mainContent.classList.toggle('blurred');
+    }
+</script>
 
 </body>
 </html>

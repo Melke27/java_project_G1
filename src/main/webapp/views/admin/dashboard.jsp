@@ -1,4 +1,5 @@
 <%@ page import="com.equbidir.model.Member" %>
+<%@ page import="com.equbidir.model.Notification" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Calendar" %>
 <%@ page import="java.net.URLEncoder" %>
@@ -344,6 +345,8 @@
     String labelIdirUnpaid = isAm ? "ያልተከፈሉ የእድር አባላት" : "Idir Unpaid Members";
     String labelIdirExpensesTotal = isAm ? "ጠቅላላ የእድር ወጪ" : "Total Idir Expenses";
     String labelIdirExpensesCount = isAm ? "የወጪ ብዛት" : "Expense Records";
+    String labelNotifications = isAm ? "ማስታወቂያዎች" : "Notifications";
+    String labelPostNotification = isAm ? "ማስታወቂያ ላክ" : "Post Notification";
 
     String message = (String) session.getAttribute("message");
     String error = (String) session.getAttribute("error");
@@ -358,6 +361,11 @@
     List<Member> regularMembers = (List<Member>) request.getAttribute("regularMembers");
     if (regularMembers == null) {
         regularMembers = java.util.Collections.emptyList();
+    }
+
+    List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+    if (notifications == null) {
+        notifications = java.util.Collections.emptyList();
     }
 
     Integer regularMembersTotal = (Integer) request.getAttribute("regularMembersTotal");
@@ -468,6 +476,48 @@
                 <div class="info-item" style="font-size:28px;"><%= String.format("%.2f", idirExpensesTotal) %></div>
                 <div style="color:#666; font-weight:600;"><%= labelIdirExpensesCount %>: <%= idirExpensesCount %></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card" id="notifications">
+        <h2><i class="fas fa-bell"></i> <%= labelNotifications %></h2>
+
+        <div style="margin-top: 12px;">
+            <form method="post" action="<%= ctx %>/admin/notifications" style="display:flex; flex-direction:column; gap: 10px;">
+                <input type="text" name="title" placeholder="<%= isAm ? "ርዕስ" : "Title" %>" required
+                       style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px;" />
+                <textarea name="message" rows="3" placeholder="<%= isAm ? "መልዕክት" : "Message" %>" required
+                          style="padding:12px 14px;border:1px solid #ddd;border-radius:12px;font-size:16px; resize: vertical;"></textarea>
+                <button type="submit" style="align-self:flex-start; padding:12px 18px; background:#1e4d2b; color:white; border:none; border-radius:999px; font-weight:700; cursor:pointer;">
+                    <i class="fas fa-paper-plane"></i> <%= labelPostNotification %>
+                </button>
+            </form>
+        </div>
+
+        <div style="margin-top: 18px;">
+            <div style="font-weight:800; color:#1e4d2b; margin-bottom: 10px;">
+                <%= isAm ? "የቅርብ ጊዜ ማስታወቂያዎች" : "Recent notifications" %>
+            </div>
+
+            <% if (notifications.isEmpty()) { %>
+            <div class="placeholder">
+                <i class="fas fa-envelope-open-text"></i>
+                <p><%= isAm ? "ምንም ማስታወቂያ የለም።" : "No notifications posted yet." %></p>
+            </div>
+            <% } else { %>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <% for (Notification n : notifications) { %>
+                <div style="padding:14px 16px; border:1px solid #eee; border-radius:12px;">
+                    <div style="font-weight:800; color:#1e4d2b;"><%= n.getTitle() %></div>
+                    <div style="color:#666; margin-top:6px;"><%= n.getMessage() %></div>
+                    <div style="color:#888; margin-top:10px; font-size:12px; font-weight:700;">
+                        <%= n.getCreatedAt() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy").format(n.getCreatedAt()) : "" %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
     </div>
 

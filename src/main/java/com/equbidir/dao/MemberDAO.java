@@ -1,6 +1,9 @@
 package com.equbidir.dao;
 
 import com.equbidir.model.Member;
+import com.equbidir.model.EqubMemberInfo;
+import com.equbidir.model.EqubMembership;
+import com.equbidir.model.IdirMembership;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
 
@@ -218,7 +221,6 @@ public class MemberDAO {
         }
     }
 
-    // NEW: Verify current password for change password feature
     public boolean verifyCurrentPassword(int memberId, String plainPassword) throws SQLException {
         String sql = "SELECT password_hash FROM members WHERE member_id = ?";
         try (Connection con = DatabaseConnection.getConnection();
@@ -235,7 +237,6 @@ public class MemberDAO {
         return false;
     }
 
-    // NEW: Get member with password hash (alternative if needed)
     public String getPasswordHash(int memberId) throws SQLException {
         String sql = "SELECT password_hash FROM members WHERE member_id = ?";
         try (Connection con = DatabaseConnection.getConnection();
@@ -245,6 +246,119 @@ public class MemberDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("password_hash");
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<EqubMembership> getEqubMemberships(int memberId) throws SQLException {
+        List<EqubMembership> out = new ArrayList<>();
+
+        String sql = "SELECT eg.equb_id, eg.equb_name, eg.amount, eg.frequency, em.payment_status, em.rotation_position " +
+                "FROM equb_members em JOIN equb_groups eg ON em.equb_id = eg.equb_id " +
+                "WHERE em.member_id = ? " +
+                "ORDER BY eg.equb_name ASC";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Integer rotationPos = rs.getObject("rotation_position") != null
+                            ? rs.getInt("rotation_position")
+                            : null;
+
+                    out.add(new EqubMembership(
+                            rs.getInt("equb_id"),
+                            rs.getString("equb_name"),
+                            rs.getDouble("amount"),
+                            rs.getString("frequency"),
+                            rs.getString("payment_status"),
+                            rotationPos
+                    ));
+                }
+            }
+        }
+
+        return out;
+    }
+
+    public List<IdirMembership> getIdirMemberships(int memberId) throws SQLException {
+        List<IdirMembership> out = new ArrayList<>();
+
+        String sql = "SELECT ig.idir_id, ig.idir_name, ig.monthly_payment, im.payment_status " +
+                "FROM idir_members im JOIN idir_groups ig ON im.idir_id = ig.idir_id " +
+                "WHERE im.member_id = ? " +
+                "ORDER BY ig.idir_name ASC";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(new IdirMembership(
+                            rs.getInt("idir_id"),
+                            rs.getString("idir_name"),
+                            rs.getDouble("monthly_payment"),
+                            rs.getString("payment_status")
+                    ));
+                }
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Backwards-compatible helper: returns details for the first Equb the member belongs to.
+     */
+    public EqubMemberInfo getMemberEqubInfo(int memberId) throws SQLException {
+        List<EqubMembership> memberships = getEqubMemberships(memberId);
+        if (memberships.isEmpty()) {
+            return null;
+        }
+        return getMemberEqubInfo(memberId, memberships.get(0).getEqubId());
+    }
+
+    public EqubMemberInfo getMemberEqubInfo(int memberId, int equbId) throws SQLException {
+        String sql = """
+            SELECT
+                eg.equb_id,
+                eg.equb_name,
+                eg.amount,
+                eg.frequency,
+                em.rotation_position,
+                em.payment_status,
+                (SELECT COUNT(*) FROM equb_members em2 WHERE em2.equb_id = eg.equb_id) AS total_members
+            FROM equb_members em
+            JOIN equb_groups eg ON em.equb_id = eg.equb_id
+            WHERE em.member_id = ? AND eg.equb_id = ?
+            """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            ps.setInt(2, equbId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Integer rotationPos = rs.getObject("rotation_position") != null
+                            ? rs.getInt("rotation_position")
+                            : null;
+
+                    return new EqubMemberInfo(
+                            rs.getInt("equb_id"),
+                            rs.getString("equb_name"),
+                            rs.getDouble("amount"),
+                            rs.getString("frequency"),
+                            rotationPos,
+                            rs.getString("payment_status"),
+                            rs.getInt("total_members")
+                    );
                 }
             }
         }

@@ -2,6 +2,11 @@ package com.equbidir.controller;
 
 import com.equbidir.dao.DashboardDAO;
 import com.equbidir.dao.MemberDAO;
+import com.equbidir.dao.NotificationDAO;
+import com.equbidir.model.Notification;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,6 +21,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private final DashboardDAO dashboardDAO = new DashboardDAO();
     private final MemberDAO memberDAO = new MemberDAO();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -66,9 +72,14 @@ public class AdminDashboardServlet extends HttpServlet {
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("q", search);
 
+            // Notifications
+            List<Notification> notifications = notificationDAO.getLatestNotifications(10);
+            request.setAttribute("notifications", notifications);
+
         } catch (Exception e) {
             // Keep the dashboard page rendering even if DB is not configured yet.
             request.setAttribute("dashboardError", "Dashboard stats unavailable: " + e.getMessage());
+            request.setAttribute("notifications", Collections.emptyList());
         }
 
         request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
