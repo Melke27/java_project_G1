@@ -176,6 +176,8 @@
         <servlet-name>LanguageServlet</servlet-name>
         <url-pattern>/lang</url-pattern>
     </servlet-mapping>
+
+    <!-- Member Details Servlets -->
     <servlet>
         <servlet-name>EqubDetailsServlet</servlet-name>
         <servlet-class>com.equbidir.controller.EqubDetailsServlet</servlet-class>
@@ -192,6 +194,24 @@
     <servlet-mapping>
         <servlet-name>MemberMessageServlet</servlet-name>
         <url-pattern>/member/contact-admin</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>IdirDetailsServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.IdirDetailsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>IdirDetailsServlet</servlet-name>
+        <url-pattern>/member/idir-details</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ContributionHistoryServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.ContributionHistoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContributionHistoryServlet</servlet-name>
+        <url-pattern>/member/contribution-history</url-pattern>
     </servlet-mapping>
 
     <!-- Welcome File -->

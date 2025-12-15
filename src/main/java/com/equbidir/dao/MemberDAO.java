@@ -7,6 +7,12 @@ import com.equbidir.model.IdirMembership;
 import com.equbidir.model.ContributionRecord;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
+<<<<<<< HEAD
+import com.equbidir.model.EqubMemberInfo;
+import com.equbidir.model.IdirMemberInfo;
+import com.equbidir.model.Contribution;
+=======
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -422,4 +428,82 @@ public class MemberDAO {
         }
         return null;
     }
+<<<<<<< HEAD
+
+    public IdirMemberInfo getMemberIdirInfo(int memberId) throws SQLException {
+        String sql = """
+            SELECT 
+                ig.idir_id,
+                ig.idir_name,
+                ig.monthly_payment,
+                im.payment_status,
+                (COUNT(CASE WHEN im2.payment_status = 'paid' THEN 1 END) * ig.monthly_payment) AS fund_balance,
+                (SELECT COUNT(*) FROM idir_members im2 WHERE im2.idir_id = ig.idir_id) AS total_members
+            FROM idir_members im
+            JOIN idir_groups ig ON im.idir_id = ig.idir_id
+            LEFT JOIN idir_members im2 ON im2.idir_id = ig.idir_id
+            WHERE im.member_id = ?
+            GROUP BY ig.idir_id, ig.idir_name, ig.monthly_payment, im.payment_status
+            """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new IdirMemberInfo(
+                            rs.getInt("idir_id"),
+                            rs.getString("idir_name"),
+                            rs.getDouble("monthly_payment"),
+                            rs.getString("payment_status"),
+                            rs.getDouble("fund_balance"),
+                            rs.getInt("total_members")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Contribution> getMemberContributionHistory(int memberId) throws SQLException {
+        List<Contribution> contributions = new ArrayList<>();
+        String sql = """
+            SELECT 'Equb' AS type, eg.equb_name AS group_name, eg.amount, em.payment_status AS status
+            FROM equb_members em
+            JOIN equb_groups eg ON em.equb_id = eg.equb_id
+            WHERE em.member_id = ?
+            
+            UNION ALL
+            
+            SELECT 'Idir' AS type, ig.idir_name AS group_name, ig.monthly_payment, im.payment_status AS status
+            FROM idir_members im
+            JOIN idir_groups ig ON im.idir_id = ig.idir_id
+            WHERE im.member_id = ?
+            ORDER BY group_name
+            """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            ps.setInt(2, memberId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    contributions.add(new Contribution(
+                            null,
+                            rs.getString("group_name"),
+                            rs.getString("type"),
+                            rs.getDouble("amount"),
+                            rs.getString("status")
+                    ));
+                }
+            }
+        }
+        return contributions;
+    }
 }
+=======
+}
+>>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
