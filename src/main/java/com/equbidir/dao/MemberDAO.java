@@ -7,12 +7,8 @@ import com.equbidir.model.IdirMembership;
 import com.equbidir.model.ContributionRecord;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
-<<<<<<< HEAD
-import com.equbidir.model.EqubMemberInfo;
 import com.equbidir.model.IdirMemberInfo;
 import com.equbidir.model.Contribution;
-=======
->>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -428,7 +424,6 @@ public class MemberDAO {
         }
         return null;
     }
-<<<<<<< HEAD
 
     public IdirMemberInfo getMemberIdirInfo(int memberId) throws SQLException {
         String sql = """
@@ -504,6 +499,3 @@ public class MemberDAO {
         return contributions;
     }
 }
-=======
-}
->>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd

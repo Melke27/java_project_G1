@@ -333,27 +333,8 @@
     String labelLogout = isAm ? "ውጣ" : "Logout";
 
     String dashboardPath = "admin".equalsIgnoreCase(user.getRole())
-            ? "/views/admin/dashboard.jsp"
-            : "/views/member/dashboard.jsp";
-
-    String success = (String) request.getAttribute("success");
-    String error = (String) request.getAttribute("error");
-    String passwordSuccess = (String) request.getAttribute("passwordSuccess");
-    String passwordError = (String) request.getAttribute("passwordError");
-
-    String activeTab = "personal";
-    if (passwordSuccess != null || passwordError != null) {
-        activeTab = "password";
-    } else if (success != null || error != null) {
-        activeTab = "personal";
-    }
-<<<<<<< HEAD
-=======
-
-    String dashboardPath = "admin".equalsIgnoreCase(user.getRole())
             ? "/admin/dashboard"
             : "/member/dashboard";
->>>>>>> c99eacf69167d2599f411623f0789eacee5c68dd
 %>
 
 <!-- Dark Overlay -->
