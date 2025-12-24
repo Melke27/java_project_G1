@@ -2,12 +2,14 @@ package com.equbidir.controller;
 
 import com.equbidir.dao.MemberDAO;
 import com.equbidir.model.Member;
-import com.equbidir.model.EqubMemberInfo;
+import com.equbidir.model.EqubMembership;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @WebServlet("/member/equb-details")
 public class EqubDetailsServlet extends HttpServlet {
@@ -19,38 +21,35 @@ public class EqubDetailsServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        Member user = session == null ? null : (Member) session.getAttribute("user");
+        Member user = (session != null) ? (Member) session.getAttribute("user") : null;
 
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String equbIdStr = request.getParameter("equb_id");
-
         try {
-            // If equb_id not provided, fall back to the first Equb membership.
-            int equbId;
-            if (equbIdStr == null || equbIdStr.trim().isEmpty()) {
-                var memberships = memberDAO.getEqubMemberships(user.getMemberId());
-                if (memberships.isEmpty()) {
-                    request.setAttribute("equbInfo", null);
-                    request.getRequestDispatcher("/views/member/equb-details.jsp").forward(request, response);
-                    return;
+            // Fetch ALL Equb memberships for this member
+            List<EqubMembership> equbMemberships = memberDAO.getEqubMemberships(user.getMemberId());
+
+            // Load actual group members for each Equb group
+            if (equbMemberships != null) {
+                for (EqubMembership equb : equbMemberships) {
+                    List<Member> groupMembers = memberDAO.getMembersInEqub(equb.getEqubId());
+                    equb.setGroupMembers(groupMembers != null ? groupMembers : Collections.emptyList());
                 }
-                equbId = memberships.get(0).getEqubId();
-            } else {
-                equbId = Integer.parseInt(equbIdStr);
             }
 
-            EqubMemberInfo equbInfo = memberDAO.getMemberEqubInfo(user.getMemberId(), equbId);
-            request.setAttribute("equbInfo", equbInfo);
+            // Pass the enriched list to JSP
+            request.setAttribute("equbMemberships",
+                    equbMemberships != null ? equbMemberships : Collections.emptyList());
+
             request.getRequestDispatcher("/views/member/equb-details.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
             if (session != null) {
-                session.setAttribute("error", "Error loading Equb details: " + e.getMessage());
+                session.setAttribute("error", "Unable to load your Equb groups. Please try again later.");
             }
             response.sendRedirect(request.getContextPath() + "/member/dashboard");
         }

@@ -6,11 +6,10 @@ import com.equbidir.model.IdirGroup;
 import com.equbidir.model.Member;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IdirServlet extends HttpServlet {
 
@@ -19,7 +18,8 @@ public class IdirServlet extends HttpServlet {
 
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
-        return session != null && "admin".equalsIgnoreCase(String.valueOf(session.getAttribute("role")));
+        Member user = (session != null) ? (Member) session.getAttribute("user") : null;
+        return user != null && "admin".equalsIgnoreCase(user.getRole());
     }
 
     @Override
@@ -30,9 +30,24 @@ public class IdirServlet extends HttpServlet {
         }
 
         try {
-            req.setAttribute("groups", idirDAO.getAllGroups());
-            req.setAttribute("allMembers", memberDAO.getAllMembers());
+            // Load all Idir groups
+            List<IdirGroup> groups = idirDAO.getAllGroups();
+            req.setAttribute("groups", groups);
 
+            // Load all members
+            List<Member> allMembers = memberDAO.getAllMembers();
+
+            // Filter: only members NOT in any Idir group (max 1 allowed)
+            List<Member> availableMembers = new ArrayList<>();
+            for (Member m : allMembers) {
+                int groupCount = memberDAO.countIdirGroupsForMember(m.getMemberId());
+                if (groupCount == 0) {
+                    availableMembers.add(m);
+                }
+            }
+            req.setAttribute("availableMembers", availableMembers);
+
+            // Handle selected group
             String idirIdStr = req.getParameter("idir_id");
             if (idirIdStr != null && !idirIdStr.trim().isEmpty()) {
                 int idirId = Integer.parseInt(idirIdStr);
@@ -41,8 +56,9 @@ public class IdirServlet extends HttpServlet {
             }
 
             req.getRequestDispatcher("/views/admin/idir_management.jsp").forward(req, resp);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            throw new ServletException("Error loading Idir management page", e);
         }
     }
 
@@ -54,42 +70,71 @@ public class IdirServlet extends HttpServlet {
         }
 
         String action = req.getParameter("action");
-        String idirIdStr = req.getParameter("idir_id");
 
         try {
             if ("create_group".equalsIgnoreCase(action)) {
                 IdirGroup g = new IdirGroup();
                 g.setIdirName(req.getParameter("idir_name"));
                 g.setMonthlyPayment(Double.parseDouble(req.getParameter("monthly_payment")));
+
                 idirDAO.createGroup(g);
+
+                HttpSession session = req.getSession();
+                session.setAttribute("message", "Idir group created successfully!");
                 resp.sendRedirect(req.getContextPath() + "/admin/idir");
                 return;
             }
 
             if ("delete_group".equalsIgnoreCase(action)) {
-                idirDAO.deleteGroup(Integer.parseInt(idirIdStr));
+                int idirId = Integer.parseInt(req.getParameter("idir_id"));
+                idirDAO.deleteGroup(idirId);
+
+                HttpSession session = req.getSession();
+                session.setAttribute("message", "Idir group deleted successfully!");
                 resp.sendRedirect(req.getContextPath() + "/admin/idir");
                 return;
             }
 
+            String idirIdStr = req.getParameter("idir_id");
+            if (idirIdStr == null || idirIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Idir ID is required");
+            }
             int idirId = Integer.parseInt(idirIdStr);
+
+            HttpSession session = req.getSession();
 
             if ("add_member".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
-                idirDAO.addMemberToIdir(memberId, idirId);
-            } else if ("approve_payment".equalsIgnoreCase(action)) {
+
+                // Server-side protection: only allow if not in any Idir group
+                int currentCount = memberDAO.countIdirGroupsForMember(memberId);
+                if (currentCount > 0) {
+                    session.setAttribute("error", "This member is already in an Idir group and cannot join another.");
+                }
+                // Prevent duplicate in same group
+                else if (idirDAO.isMemberInIdir(memberId, idirId)) {
+                    session.setAttribute("error", "This member is already in this group.");
+                } else {
+                    idirDAO.addMemberToIdir(memberId, idirId);
+                    session.setAttribute("message", "Member added successfully!");
+                }
+            }
+            else if ("approve_payment".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
 
-                HttpSession session = req.getSession(false);
-                Member admin = session == null ? null : (Member) session.getAttribute("user");
-                Integer approvedBy = admin == null ? null : admin.getMemberId();
+                Member admin = (Member) session.getAttribute("user");
+                Integer approvedBy = (admin != null) ? admin.getMemberId() : null;
 
                 idirDAO.approvePayment(idirId, memberId, approvedBy);
+                session.setAttribute("message", "Payment approved successfully!");
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/idir?idir_id=" + idirId);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            HttpSession session = req.getSession();
+            session.setAttribute("error", "Operation failed: " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/idir");
         }
     }
 }

@@ -7,7 +7,6 @@ import com.equbidir.model.IdirMembership;
 import com.equbidir.model.ContributionRecord;
 import com.equbidir.util.DatabaseConnection;
 import com.equbidir.util.SecurityUtil;
-import com.equbidir.model.IdirMemberInfo;
 import com.equbidir.model.Contribution;
 
 import java.sql.*;
@@ -65,7 +64,7 @@ public class MemberDAO {
 
     public List<Member> getAdmins() throws SQLException {
         List<Member> admins = new ArrayList<>();
-        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE LOWER(role)='admin' ORDER BY full_name ASC";
+        String sql = "SELECT member_id, full_name, phone, address, role FROM members WHERE LOWER(role) = 'admin' ORDER BY full_name ASC";
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -81,7 +80,6 @@ public class MemberDAO {
                 ));
             }
         }
-
         return admins;
     }
 
@@ -313,10 +311,22 @@ public class MemberDAO {
     public List<IdirMembership> getIdirMemberships(int memberId) throws SQLException {
         List<IdirMembership> out = new ArrayList<>();
 
-        String sql = "SELECT ig.idir_id, ig.idir_name, ig.monthly_payment, im.payment_status " +
-                "FROM idir_members im JOIN idir_groups ig ON im.idir_id = ig.idir_id " +
-                "WHERE im.member_id = ? " +
-                "ORDER BY ig.idir_name ASC";
+        String sql = """
+            SELECT 
+                ig.idir_id,
+                ig.idir_name,
+                ig.monthly_payment,
+                COALESCE(im.payment_status, 'unpaid') AS payment_status,
+                (SELECT COUNT(*) FROM idir_members im2 WHERE im2.idir_id = ig.idir_id) AS total_members,
+                (SELECT COUNT(*) * ig.monthly_payment 
+                 FROM idir_members im2 
+                 WHERE im2.idir_id = ig.idir_id 
+                   AND im2.payment_status = 'paid') AS fund_balance
+            FROM idir_members im 
+            JOIN idir_groups ig ON im.idir_id = ig.idir_id 
+            WHERE im.member_id = ?
+            ORDER BY ig.idir_name ASC
+            """;
 
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -328,12 +338,13 @@ public class MemberDAO {
                             rs.getInt("idir_id"),
                             rs.getString("idir_name"),
                             rs.getDouble("monthly_payment"),
-                            rs.getString("payment_status")
+                            rs.getString("payment_status"),
+                            rs.getDouble("fund_balance"),
+                            rs.getInt("total_members")
                     ));
                 }
             }
         }
-
         return out;
     }
 
@@ -368,13 +379,9 @@ public class MemberDAO {
                 }
             }
         }
-
         return out;
     }
 
-    /**
-     * Backwards-compatible helper: returns details for the first Equb the member belongs to.
-     */
     public EqubMemberInfo getMemberEqubInfo(int memberId) throws SQLException {
         List<EqubMembership> memberships = getEqubMemberships(memberId);
         if (memberships.isEmpty()) {
@@ -425,42 +432,6 @@ public class MemberDAO {
         return null;
     }
 
-    public IdirMemberInfo getMemberIdirInfo(int memberId) throws SQLException {
-        String sql = """
-            SELECT 
-                ig.idir_id,
-                ig.idir_name,
-                ig.monthly_payment,
-                im.payment_status,
-                (COUNT(CASE WHEN im2.payment_status = 'paid' THEN 1 END) * ig.monthly_payment) AS fund_balance,
-                (SELECT COUNT(*) FROM idir_members im2 WHERE im2.idir_id = ig.idir_id) AS total_members
-            FROM idir_members im
-            JOIN idir_groups ig ON im.idir_id = ig.idir_id
-            LEFT JOIN idir_members im2 ON im2.idir_id = ig.idir_id
-            WHERE im.member_id = ?
-            GROUP BY ig.idir_id, ig.idir_name, ig.monthly_payment, im.payment_status
-            """;
-
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, memberId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new IdirMemberInfo(
-                            rs.getInt("idir_id"),
-                            rs.getString("idir_name"),
-                            rs.getDouble("monthly_payment"),
-                            rs.getString("payment_status"),
-                            rs.getDouble("fund_balance"),
-                            rs.getInt("total_members")
-                    );
-                }
-            }
-        }
-        return null;
-    }
-
     public List<Contribution> getMemberContributionHistory(int memberId) throws SQLException {
         List<Contribution> contributions = new ArrayList<>();
         String sql = """
@@ -497,5 +468,91 @@ public class MemberDAO {
             }
         }
         return contributions;
+    }
+
+    // NEW: Get members in an Idir group
+    public List<Member> getMembersInIdir(int idirId) throws SQLException {
+        List<Member> members = new ArrayList<>();
+        String sql = """
+        SELECT m.member_id, m.full_name, m.phone, m.address, m.role
+        FROM members m
+        JOIN idir_members im ON m.member_id = im.member_id
+        WHERE im.idir_id = ?
+        ORDER BY m.full_name ASC
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idirId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    members.add(new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    ));
+                }
+            }
+        }
+        return members;
+    }
+
+    // NEW: Get members in an Equb group
+    public List<Member> getMembersInEqub(int equbId) throws SQLException {
+        List<Member> members = new ArrayList<>();
+        String sql = """
+        SELECT m.member_id, m.full_name, m.phone, m.address, m.role
+        FROM members m
+        JOIN equb_members em ON m.member_id = em.member_id
+        WHERE em.equb_id = ?
+        ORDER BY m.full_name ASC
+        """;
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, equbId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    members.add(new Member(
+                            rs.getInt("member_id"),
+                            rs.getString("full_name"),
+                            rs.getString("phone"),
+                            rs.getString("address"),
+                            rs.getString("role")
+                    ));
+                }
+            }
+        }
+        return members;
+    }
+
+    // NEW: Count how many Equb groups a member is in
+    public int countEqubGroupsForMember(int memberId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM equb_members WHERE member_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+    public int countIdirGroupsForMember(int memberId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM idir_members WHERE member_id = ?";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
     }
 }

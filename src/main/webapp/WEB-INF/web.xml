@@ -56,7 +56,7 @@
         <url-pattern>/member/dashboard</url-pattern>
     </servlet-mapping>
 
-    <!-- Admin notifications (visible in member dashboard) -->
+    <!-- Admin notifications -->
     <servlet>
         <servlet-name>AdminNotificationServlet</servlet-name>
         <servlet-class>com.equbidir.controller.AdminNotificationServlet</servlet-class>
@@ -100,6 +100,16 @@
     <servlet-mapping>
         <servlet-name>ExpenseServlet</servlet-name>
         <url-pattern>/admin/expenses</url-pattern>
+    </servlet-mapping>
+
+    <!-- NEW: Reports Servlet -->
+    <servlet>
+        <servlet-name>ReportsServlet</servlet-name>
+        <servlet-class>com.equbidir.controller.ReportsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReportsServlet</servlet-name>
+        <url-pattern>/admin/reports</url-pattern>
     </servlet-mapping>
 
     <!-- Member Management Servlets -->

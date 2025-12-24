@@ -58,6 +58,19 @@ public class EqubDAO {
         }
     }
 
+    // NEW: Check if member is already in this Equb group
+    public boolean isMemberInEqub(int memberId, int equbId) throws SQLException {
+        String sql = "SELECT 1 FROM equb_members WHERE member_id = ? AND equb_id = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            ps.setInt(2, equbId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // true if exists
+            }
+        }
+    }
+
     public List<String[]> getEqubMembers(int equbId) throws SQLException {
         // returns rows: member_id, full_name, phone, payment_status, rotation_position
         List<String[]> rows = new ArrayList<>();

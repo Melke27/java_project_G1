@@ -29,15 +29,6 @@
         .sidebar-menu i { margin-right: 14px; font-size: 20px; width: 28px; text-align: center; }
         .main-content { padding: 20px; width: 100%; transition: filter 0.4s ease; }
         .main-content.blurred { filter: blur(5px); }
-        .lang-selector { margin-top: 40px; text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px; }
-        .lang-selector label { display: block; margin-bottom: 12px; font-weight: 600; color: #c9a227; }
-        .lang-options { display: flex; justify-content: center; gap: 20px; }
-        .lang-option { text-align: center; cursor: pointer; transition: 0.3s; }
-        .lang-option:hover { transform: translateY(-5px); }
-        .lang-option img { width: 48px; height: 48px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 3px solid transparent; transition: 0.3s; }
-        .lang-option:hover img { border-color: #c9a227; }
-        .lang-option span { display: block; margin-top: 8px; font-size: 14px; font-weight: 600; }
-        .lang-option.active img { border-color: #c9a227; transform: scale(1.1); }
         .welcome-header { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 30px; }
         .welcome-header h1 { color: #1e4d2b; margin: 0; font-size: 28px; }
         .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 30px; }
@@ -59,6 +50,7 @@
         .actions form { display: inline; }
         .back-btn { display: inline-block; padding: 12px 24px; background: #1e4d2b; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; }
         .back-btn:hover { background: #c9a227; color: #1e4d2b; }
+        .note { font-size: 14px; color: #666; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -97,8 +89,9 @@
 
     Integer selectedEqubId = (Integer) request.getAttribute("selectedEqubId");
 
-    List<Member> allMembers = (List<Member>) request.getAttribute("allMembers");
-    if (allMembers == null) allMembers = java.util.Collections.emptyList();
+    // Available members: only those in less than 2 groups
+    List<Member> availableMembers = (List<Member>) request.getAttribute("availableMembers");
+    if (availableMembers == null) availableMembers = java.util.Collections.emptyList();
 
     @SuppressWarnings("unchecked")
     List<String[]> equbMembers = (List<String[]>) request.getAttribute("equbMembers");
@@ -227,15 +220,25 @@
                 <input type="hidden" name="equb_id" value="<%= selectedEqubId %>" />
 
                 <div class="form-group">
-                    <label><%= isAm ? "አባል ምረጥ" : "Select Member" %></label>
+                    <label><%= isAm ? "አባል ምረጥ (ከፍተኛ 2 ቡድኖች)" : "Select Member (Max 2 groups)" %></label>
                     <select name="member_id" required>
-                        <% for (Member m : allMembers) { %>
-                        <option value="<%= m.getMemberId() %>"><%= m.getFullName() %> (<%= m.getPhone() %>)</option>
+                        <% if (availableMembers.isEmpty()) { %>
+                        <option disabled selected><%= isAm ? "ምንም ተገኘ አባል የለም" : "No available members" %></option>
+                        <% } else { %>
+                        <% for (Member m : availableMembers) { %>
+                        <option value="<%= m.getMemberId() %>">
+                            <%= m.getFullName() %> (<%= m.getPhone() %>)
+                        </option>
+                        <% } %>
                         <% } %>
                     </select>
+                    <div class="note">
+                        <%= isAm ? "አባላት በከፍተኛ 2 የእቁብ ቡድኖች ውስጥ ብቻ መሆን ይችላሉ።"
+                                : "Members can only be in a maximum of 2 Equb groups." %>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" <%= availableMembers.isEmpty() ? "disabled" : "" %>>
                     <i class="fas fa-user-plus"></i> <%= isAm ? "አባል ጨምር" : "Add Member" %>
                 </button>
             </form>

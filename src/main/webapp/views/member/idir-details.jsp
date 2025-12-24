@@ -1,6 +1,6 @@
 <%@ page import="com.equbidir.model.Member" %>
-<%@ page import="com.equbidir.model.IdirMemberInfo" %>
-<%@ page import="com.equbidir.dao.MemberDAO" %>
+<%@ page import="com.equbidir.model.IdirMembership" %>
+<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
@@ -8,7 +8,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Idir Group - Equb & Idir</title>
+  <title>My Idir Groups - Equb & Idir</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/dashboard.css">
@@ -29,28 +29,90 @@
     .sidebar-menu i { margin-right: 14px; font-size: 20px; width: 28px; text-align: center; }
     .main-content { padding: 20px; width: 100%; transition: filter 0.4s ease; }
     .main-content.blurred { filter: blur(5px); }
-    .lang-selector { margin-top: 40px; text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px; }
-    .lang-selector label { display: block; margin-bottom: 12px; font-weight: 600; color: #c9a227; }
-    .lang-options { display: flex; justify-content: center; gap: 20px; }
-    .lang-option { text-align: center; cursor: pointer; transition: 0.3s; }
-    .lang-option:hover { transform: translateY(-5px); }
-    .lang-option img { width: 48px; height: 48px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 3px solid transparent; transition: 0.3s; }
-    .lang-option:hover img { border-color: #c9a227; }
-    .lang-option span { display: block; margin-top: 8px; font-size: 14px; font-weight: 600; }
-    .lang-option.active img { border-color: #c9a227; transform: scale(1.1); }
     .welcome-header { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 30px; }
     .welcome-header h1 { color: #1e4d2b; margin: 0; font-size: 28px; }
-    .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); margin-bottom: 30px; }
-    .card h2 { color: #1e4d2b; border-bottom: 2px solid #c9a227; padding-bottom: 12px; }
-    .placeholder { text-align: center; color: #888; padding: 60px 20px; font-size: 18px; }
-    .placeholder i { font-size: 64px; color: #c9a227; margin-bottom: 20px; }
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
-    .info-item { background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; }
-    .info-item strong { color: #1e4d2b; display: block; margin-bottom: 8px; font-size: 16px; }
-    .info-item span { font-size: 20px; font-weight: 600; color: #2d3436; }
-    .highlight { color: #c9a227; font-size: 28px; font-weight: bold; }
-    .back-btn { display: inline-block; margin: 20px 0; padding: 12px 24px; background: #1e4d2b; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; }
+    .placeholder { text-align: center; color: #888; padding: 80px 20px; font-size: 18px; }
+    .placeholder i { font-size: 80px; color: #c9a227; margin-bottom: 20px; }
+    .idir-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; margin-top: 20px; }
+    .idir-card { background: #f8fafc; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #27ae60; position: relative; }
+    .idir-card h3 { color: #1e4d2b; margin: 0 0 20px 0; font-size: 22px; }
+    .idir-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .idir-info div strong { color: #1e4d2b; font-size: 15px; display: block; margin-bottom: 5px; }
+    .idir-info div span { font-size: 18px; font-weight: 600; color: #2d3436; }
+    .status-paid { color: #27ae60; font-weight: bold; }
+    .status-unpaid { color: #e74c3c; font-weight: bold; }
+    .fund-balance { text-align: center; padding: 20px; background: white; border-radius: 12px; margin-top: 20px; }
+    .fund-amount { font-size: 32px; color: #27ae60; font-weight: bold; margin: 10px 0; }
+    .back-btn { display: inline-block; padding: 12px 24px; background: #1e4d2b; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; }
     .back-btn:hover { background: #c9a227; color: #1e4d2b; }
+
+    .view-members-btn {
+      margin-top: 20px;
+      padding: 14px;
+      background: #1e4d2b;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.3s;
+      position: relative;
+      z-index: 20;
+    }
+    .view-members-btn:hover {
+      background: #27ae60;
+    }
+
+    .members-panel-wrapper {
+      position: relative;
+    }
+    .members-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 70px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      z-index: 10;
+      padding: 0 20px;
+    }
+    .members-panel.open {
+      max-height: 400px;
+      padding: 20px;
+    }
+    .members-panel ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .members-panel li {
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .members-panel li:last-child {
+      border-bottom: none;
+    }
+    .members-panel .name {
+      font-weight: 600;
+      color: #1e4d2b;
+    }
+    .members-panel .phone {
+      color: #666;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +120,7 @@
 <%
   Member user = (Member) session.getAttribute("user");
   if (user == null) {
-    response.sendRedirect(request.getContextPath() + "/views/auth/login.jsp");
+    response.sendRedirect(request.getContextPath() + "/login");
     return;
   }
 
@@ -68,22 +130,21 @@
 
   String ctx = request.getContextPath();
 
-  MemberDAO memberDAO = new MemberDAO();
-  IdirMemberInfo idirInfo = memberDAO.getMemberIdirInfo(user.getMemberId());
+  @SuppressWarnings("unchecked")
+  List<IdirMembership> idirMemberships = (List<IdirMembership>) request.getAttribute("idirMemberships");
+  if (idirMemberships == null) idirMemberships = java.util.Collections.emptyList();
 
   String labelDashboard = isAm ? "ዳሽቦርድ" : "Dashboard";
-  String labelMyEqub = isAm ? "የእቁብ ቡድኔ" : "My Equb Group";
-  String labelMyIdir = isAm ? "የእድር ቡድኔ" : "My Idir Group";
+  String labelMyEqub = isAm ? "የእቁብ ቡድኖቼ" : "My Equb Groups";
+  String labelMyIdir = isAm ? "የእድር ቡድኖቼ" : "My Idir Groups";
   String labelProfile = isAm ? "የግል መረጃዬ" : "My Profile";
   String labelHistoryTitle = isAm ? "የመዋጮ ታሪክ" : "Contribution History";
   String labelLogout = isAm ? "ውጣ" : "Logout";
   String labelNotAssigned = isAm ? "እስካሁን ወደ ምንም የእድር ቡድን አልተመደቡም።" : "You are not assigned to any Idir group yet.";
   String labelContactAdmin = isAm ? "ለመቀላቀል አስተዳዳሪዎን ያነጋግሩ።" : "Contact your administrator to join one.";
-  String labelGroupName = isAm ? "የቡድን ስም" : "Group Name";
   String labelMonthlyPayment = isAm ? "ወርሃዊ ክፍያ" : "Monthly Payment";
-  String labelTotalMembers = isAm ? "ጠቅላላ አባላት" : "Total Members";
-  String labelFundBalance = isAm ? "የፈንድ ቀሪ መጠን" : "Fund Balance";
   String labelPaymentStatus = isAm ? "የክፍያ ሁኔታ" : "Payment Status";
+  String labelFundBalance = isAm ? "የፈንድ ቀሪ መጠን" : "Fund Balance";
   String labelBack = isAm ? "ወደ ዳሽቦርድ" : "Back to Dashboard";
 %>
 
@@ -101,22 +162,22 @@
     <h2>Equb & Idir</h2>
   </div>
   <ul class="sidebar-menu">
-    <li><a href="<%= request.getContextPath() %>/admin/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
+    <li><a href="<%= request.getContextPath() %>/member/dashboard"><i class="fas fa-tachometer-alt"></i> <%= labelDashboard %></a></li>
     <li><a href="<%= request.getContextPath() %>/member/equb-details"><i class="fas fa-handshake"></i> <%= labelMyEqub %></a></li>
     <li><a href="<%= request.getContextPath() %>/member/idir-details" class="active"><i class="fas fa-heart"></i> <%= labelMyIdir %></a></li>
-    <li><a href="<%= request.getContextPath() %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
     <li><a href="<%= request.getContextPath() %>/member/contribution-history"><i class="fas fa-history"></i> <%= labelHistoryTitle %></a></li>
+    <li><a href="<%= request.getContextPath() %>/views/member/profile.jsp"><i class="fas fa-user"></i> <%= labelProfile %></a></li>
     <li><a href="<%= request.getContextPath() %>/logout"><i class="fas fa-sign-out-alt"></i> <%= labelLogout %></a></li>
   </ul>
 
   <div class="lang-selector">
     <label><%= isAm ? "ቋንቋ ይምረጡ" : "Select Language" %></label>
     <div class="lang-options">
-      <div class="lang-option <%= !isAm ? "active" : "" %>" onclick="window.location='<%= request.getContextPath() %>/lang?lang=en'">
+      <div class="lang-option <%= !isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=en'">
         <img src="https://flagcdn.com/w80/gb.png" alt="English">
         <span>English</span>
       </div>
-      <div class="lang-option <%= isAm ? "active" : "" %>" onclick="window.location='<%= request.getContextPath() %>/lang?lang=am'">
+      <div class="lang-option <%= isAm ? "active" : "" %>" onclick="window.location='<%= ctx %>/lang?lang=am'">
         <img src="https://flagcdn.com/w80/et.png" alt="አማርኛ">
         <span>አማርኛ</span>
       </div>
@@ -128,46 +189,86 @@
 <div class="main-content" id="mainContent">
   <div class="welcome-header">
     <h1><%= labelMyIdir %></h1>
-    <a href="<%= request.getContextPath() %>/views/member/dashboard.jsp" class="back-btn">
+    <a href="<%= request.getContextPath() %>/member/dashboard" class="back-btn">
       <i class="fas fa-arrow-left"></i> <%= labelBack %>
     </a>
   </div>
 
-  <% if (idirInfo == null) { %>
+  <% if (idirMemberships.isEmpty()) { %>
   <div class="card placeholder">
     <i class="fas fa-hands-helping"></i>
     <p><strong><%= labelNotAssigned %></strong><br><%= labelContactAdmin %></p>
   </div>
   <% } else { %>
-  <div class="card">
-    <h2><i class="fas fa-heart"></i> <%= idirInfo.getIdirName() %></h2>
+  <div class="idir-grid">
+    <% for (IdirMembership idir : idirMemberships) { %>
+    <div class="idir-card">
+      <h3><i class="fas fa-heart"></i> <%= idir.getIdirName() %></h3>
 
-    <div class="info-grid">
-      <div class="info-item">
-        <strong><%= labelGroupName %></strong>
-        <span><%= idirInfo.getIdirName() %></span>
+      <div class="idir-info">
+        <div>
+          <strong><%= labelMonthlyPayment %></strong>
+          <span><%= String.format("%,.2f", idir.getMonthlyPayment()) %> ETB</span>
+        </div>
+        <div>
+          <strong><%= labelPaymentStatus %></strong>
+          <span class="<%= "paid".equals(idir.getPaymentStatus()) ? "status-paid" : "status-unpaid" %>">
+                            <%= "paid".equals(idir.getPaymentStatus())
+                                    ? (isAm ? "ተከፍሏል" : "Paid")
+                                    : (isAm ? "አልተከፈለም" : "Unpaid") %>
+                        </span>
+        </div>
       </div>
-      <div class="info-item">
-        <strong><%= labelMonthlyPayment %></strong>
-        <span><%= String.format("%,.2f", idirInfo.getMonthlyPayment()) %> ETB</span>
-      </div>
-      <div class="info-item">
-        <strong><%= labelTotalMembers %></strong>
-        <span><%= idirInfo.getTotalMembers() %></span>
-      </div>
-      <div class="info-item">
+
+      <div class="fund-balance">
         <strong><%= labelFundBalance %></strong>
-        <span style="font-size: 24px; color: #27ae60;"><%= String.format("%,.2f", idirInfo.getFundBalance()) %> ETB</span>
+        <div class="fund-amount">
+          <%= String.format("%,.2f", idir.getFundBalance()) %> ETB
+        </div>
+        <p style="margin:10px 0 0; color:#666;">
+          <%= isAm ? "ጠቅላላ አባላት: " : "Total Members: " %><%= idir.getTotalMembers() %>
+        </p>
       </div>
-      <div class="info-item">
-        <strong><%= labelPaymentStatus %></strong>
-        <span class="<%= "paid".equals(idirInfo.getPaymentStatus()) ? "highlight" : "" %>">
-            <%= "paid".equals(idirInfo.getPaymentStatus())
-                    ? (isAm ? "ተከፍሏል" : "Paid")
-                    : (isAm ? "አልተከፈለም" : "Unpaid") %>
-          </span>
+
+      <!-- View Members Button -->
+      <div class="members-panel-wrapper">
+        <button class="view-members-btn" type="button" id="toggle-btn-<%= idir.getIdirId() %>">
+          <i class="fas fa-users"></i> View Members
+        </button>
+
+        <div class="members-panel" id="panel-<%= idir.getIdirId() %>">
+          <% if (idir.getGroupMembers().isEmpty()) { %>
+          <p style="text-align:center; color:#888; padding:40px 20px;">
+            <%= isAm ? "ቡድኑ ባዶ ነው።" : "No members in this group yet." %>
+          </p>
+          <% } else { %>
+          <ul>
+            <% for (Member member : idir.getGroupMembers()) { %>
+            <li>
+              <div>
+                <span class="name"><%= member.getFullName() %></span>
+                <span class="phone"><%= member.getPhone() %></span>
+              </div>
+            </li>
+            <% } %>
+          </ul>
+          <% } %>
+        </div>
       </div>
+
+      <script>
+        document.getElementById("toggle-btn-<%= idir.getIdirId() %>").addEventListener("click", function() {
+          const panel = document.getElementById("panel-<%= idir.getIdirId() %>");
+          panel.classList.toggle("open");
+          if (panel.classList.contains("open")) {
+            this.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Members';
+          } else {
+            this.innerHTML = '<i class="fas fa-users"></i> View Members';
+          }
+        });
+      </script>
     </div>
+    <% } %>
   </div>
   <% } %>
 </div>

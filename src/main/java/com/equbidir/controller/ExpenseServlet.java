@@ -2,15 +2,15 @@ package com.equbidir.controller;
 
 import com.equbidir.dao.ExpenseDAO;
 import com.equbidir.dao.IdirDAO;
+import com.equbidir.model.Member;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Date;
 
+@WebServlet("/admin/expenses")
 public class ExpenseServlet extends HttpServlet {
 
     private final ExpenseDAO expenseDAO = new ExpenseDAO();
@@ -18,7 +18,8 @@ public class ExpenseServlet extends HttpServlet {
 
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
-        return session != null && "admin".equalsIgnoreCase(String.valueOf(session.getAttribute("role")));
+        Member user = (session != null) ? (Member) session.getAttribute("user") : null;
+        return user != null && "admin".equalsIgnoreCase(user.getRole());
     }
 
     @Override
@@ -39,8 +40,11 @@ public class ExpenseServlet extends HttpServlet {
             }
 
             req.getRequestDispatcher("/views/admin/expense_management.jsp").forward(req, resp);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            e.printStackTrace();
+            req.getSession().setAttribute("error", "Unable to load expenses.");
+            resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
         }
     }
 
@@ -51,16 +55,31 @@ public class ExpenseServlet extends HttpServlet {
             return;
         }
 
+        HttpSession session = req.getSession();
+
         try {
             int idirId = Integer.parseInt(req.getParameter("idir_id"));
             double amount = Double.parseDouble(req.getParameter("amount"));
             String description = req.getParameter("description");
-            Date expenseDate = Date.valueOf(req.getParameter("expense_date"));
+            String dateStr = req.getParameter("expense_date");
+
+            if (dateStr == null || dateStr.trim().isEmpty()) {
+                session.setAttribute("error", "Expense date is required.");
+                resp.sendRedirect(req.getContextPath() + "/admin/expenses?idir_id=" + idirId);
+                return;
+            }
+
+            Date expenseDate = Date.valueOf(dateStr);
 
             expenseDAO.addExpense(idirId, amount, description, expenseDate);
+
+            session.setAttribute("message", "Expense recorded successfully!");
             resp.sendRedirect(req.getContextPath() + "/admin/expenses?idir_id=" + idirId);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            e.printStackTrace();
+            session.setAttribute("error", "Failed to record expense: " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/expenses");
         }
     }
 }

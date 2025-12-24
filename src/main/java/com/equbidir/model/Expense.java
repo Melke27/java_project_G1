@@ -1,68 +1,32 @@
 package com.equbidir.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.sql.Date;
 
 public class Expense {
-    private int id;
-    private BigDecimal amount;
-    private LocalDate date;
-    private String description;
+    private Date date;
     private String category;
+    private String description;
+    private BigDecimal amount;
 
-    public Expense() {
-    }
+    public Expense() {}
 
-    public Expense(int id, BigDecimal amount, LocalDate date, String description, String category) {
-        this.id = id;
-        this.amount = amount;
+    public Expense(Date date, String category, String description, BigDecimal amount) {
         this.date = date;
-        this.description = description;
         this.category = category;
-    }
-
-    public Expense(BigDecimal amount, LocalDate date, String description, String category) {
-        this(0, amount, date, description, category);
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
+        this.description = description;
         this.amount = amount;
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
+    public Date getDate() { return date; }
+    public void setDate(Date date) { this.date = date; }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 }
-

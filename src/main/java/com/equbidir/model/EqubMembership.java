@@ -1,14 +1,20 @@
 package com.equbidir.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EqubMembership {
+
     private int equbId;
     private String equbName;
     private double amount;
     private String frequency;
     private String paymentStatus;
-    private Integer rotationPosition;
+    private Integer rotationPosition; // Nullable
+    private List<Member> groupMembers = new ArrayList<>(); // Moved here
 
-    public EqubMembership(int equbId, String equbName, double amount, String frequency, String paymentStatus, Integer rotationPosition) {
+    public EqubMembership(int equbId, String equbName, double amount,
+                          String frequency, String paymentStatus, Integer rotationPosition) {
         this.equbId = equbId;
         this.equbName = equbName;
         this.amount = amount;
@@ -17,6 +23,7 @@ public class EqubMembership {
         this.rotationPosition = rotationPosition;
     }
 
+    // Getters
     public int getEqubId() {
         return equbId;
     }
@@ -39,5 +46,13 @@ public class EqubMembership {
 
     public Integer getRotationPosition() {
         return rotationPosition;
+    }
+
+    public List<Member> getGroupMembers() {
+        return groupMembers;
+    }
+
+    public void setGroupMembers(List<Member> groupMembers) {
+        this.groupMembers = groupMembers;
     }
 }

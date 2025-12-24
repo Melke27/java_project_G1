@@ -481,10 +481,7 @@
                             <% } %>
                         </div>
                     </div>
-                    <a href="<%= ctx %>/member/equb-details?equb_id=<%= em.getEqubId() %>"
-                       style="text-decoration:none; background:#1e4d2b; color:white; padding:10px 14px; border-radius:999px; font-weight:700;">
-                        <%= isAm ? "ዝርዝር" : "Details" %>
-                    </a>
+
                 </div>
                 <% } %>
             </div>

@@ -8,6 +8,8 @@ import com.equbidir.model.Member;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EqubServlet extends HttpServlet {
 
@@ -16,7 +18,8 @@ public class EqubServlet extends HttpServlet {
 
     private boolean isAdmin(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
-        return session != null && "admin".equalsIgnoreCase(String.valueOf(session.getAttribute("role")));
+        Member user = (session != null) ? (Member) session.getAttribute("user") : null;
+        return user != null && "admin".equalsIgnoreCase(user.getRole());
     }
 
     @Override
@@ -27,9 +30,24 @@ public class EqubServlet extends HttpServlet {
         }
 
         try {
-            req.setAttribute("groups", equbDAO.getAllGroups());
-            req.setAttribute("allMembers", memberDAO.getAllMembers());
+            // Load all Equb groups
+            List<EqubGroup> groups = equbDAO.getAllGroups();
+            req.setAttribute("groups", groups);
 
+            // Load all members
+            List<Member> allMembers = memberDAO.getAllMembers();
+
+            // Filter available members: only those in less than 2 groups
+            List<Member> availableMembers = new ArrayList<>();
+            for (Member m : allMembers) {
+                int groupCount = memberDAO.countEqubGroupsForMember(m.getMemberId());
+                if (groupCount < 2) {
+                    availableMembers.add(m);
+                }
+            }
+            req.setAttribute("availableMembers", availableMembers);
+
+            // Handle selected group
             String equbIdStr = req.getParameter("equb_id");
             if (equbIdStr != null && !equbIdStr.trim().isEmpty()) {
                 int equbId = Integer.parseInt(equbIdStr);
@@ -38,8 +56,9 @@ public class EqubServlet extends HttpServlet {
             }
 
             req.getRequestDispatcher("/views/admin/equb_management.jsp").forward(req, resp);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            throw new ServletException("Error loading Equb management page", e);
         }
     }
 
@@ -51,7 +70,6 @@ public class EqubServlet extends HttpServlet {
         }
 
         String action = req.getParameter("action");
-        String equbIdStr = req.getParameter("equb_id");
 
         try {
             if ("create_group".equalsIgnoreCase(action)) {
@@ -59,38 +77,71 @@ public class EqubServlet extends HttpServlet {
                 g.setEqubName(req.getParameter("equb_name"));
                 g.setAmount(Double.parseDouble(req.getParameter("amount")));
                 g.setFrequency(req.getParameter("frequency"));
+
                 equbDAO.createGroup(g);
+
+                HttpSession session = req.getSession();
+                session.setAttribute("message", "Equb group created successfully!");
                 resp.sendRedirect(req.getContextPath() + "/admin/equb");
                 return;
             }
 
             if ("delete_group".equalsIgnoreCase(action)) {
-                equbDAO.deleteGroup(Integer.parseInt(equbIdStr));
+                int equbId = Integer.parseInt(req.getParameter("equb_id"));
+                equbDAO.deleteGroup(equbId);
+
+                HttpSession session = req.getSession();
+                session.setAttribute("message", "Equb group deleted successfully!");
                 resp.sendRedirect(req.getContextPath() + "/admin/equb");
                 return;
             }
 
+            // All other actions require equb_id
+            String equbIdStr = req.getParameter("equb_id");
+            if (equbIdStr == null || equbIdStr.trim().isEmpty()) {
+                throw new IllegalArgumentException("Equb ID is required");
+            }
             int equbId = Integer.parseInt(equbIdStr);
+
+            HttpSession session = req.getSession();
 
             if ("add_member".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
-                equbDAO.addMemberToEqub(memberId, equbId);
-            } else if ("approve_payment".equalsIgnoreCase(action)) {
+
+                // Prevent adding if already in 2 groups
+                int currentCount = memberDAO.countEqubGroupsForMember(memberId);
+                if (currentCount >= 2) {
+                    session.setAttribute("error", "This member is already in 2 Equb groups and cannot join more.");
+                }
+                // Prevent duplicate in same group
+                else if (equbDAO.isMemberInEqub(memberId, equbId)) {
+                    session.setAttribute("error", "This member is already in this group.");
+                } else {
+                    equbDAO.addMemberToEqub(memberId, equbId);
+                    session.setAttribute("message", "Member added successfully!");
+                }
+            }
+            else if ("approve_payment".equalsIgnoreCase(action)) {
                 int memberId = Integer.parseInt(req.getParameter("member_id"));
 
-                HttpSession session = req.getSession(false);
-                Member admin = session == null ? null : (Member) session.getAttribute("user");
-                Integer approvedBy = admin == null ? null : admin.getMemberId();
+                Member admin = (Member) session.getAttribute("user");
+                Integer approvedBy = (admin != null) ? admin.getMemberId() : null;
 
                 equbDAO.approvePayment(equbId, memberId, approvedBy);
-            } else if ("generate_rotation".equalsIgnoreCase(action)) {
+                session.setAttribute("message", "Payment approved successfully!");
+            }
+            else if ("generate_rotation".equalsIgnoreCase(action)) {
                 boolean random = "random".equalsIgnoreCase(req.getParameter("mode"));
                 equbDAO.generateRotation(equbId, random);
+                session.setAttribute("message", "Rotation generated successfully!");
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/equb?equb_id=" + equbId);
+
         } catch (Exception e) {
-            throw new ServletException(e);
+            HttpSession session = req.getSession();
+            session.setAttribute("error", "Operation failed: " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/admin/equb");
         }
     }
 }
