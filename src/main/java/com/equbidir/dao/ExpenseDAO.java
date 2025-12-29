@@ -32,13 +32,15 @@ public class ExpenseDAO {
 
     public Map<String, BigDecimal> getMonthlyExpenseTotals() throws SQLException {
         Map<String, BigDecimal> map = new LinkedHashMap<>();
-        String sql = "SELECT TO_CHAR(expense_date, 'YYYY-MM') AS month, COALESCE(SUM(amount), 0) " +
+
+        String sql = "SELECT DATE_FORMAT(expense_date, '%Y-%m') AS month, COALESCE(SUM(amount), 0) " +
                 "FROM idir_expenses GROUP BY month ORDER BY month DESC";
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                map.put(rs.getString("month"), rs.getBigDecimal(2));
+                map.put(rs.getString(1), rs.getBigDecimal(2));
             }
         }
         return map;

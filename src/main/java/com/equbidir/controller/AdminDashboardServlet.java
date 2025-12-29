@@ -79,7 +79,7 @@ public class AdminDashboardServlet extends HttpServlet {
             List<Notification> notifications = notificationDAO.getLatestNotifications(10);
             request.setAttribute("notifications", notifications);
 
-            // Messages from members
+                // Messages from members
             List<MemberMessage> memberMessages = memberMessageDAO.getLatestMessages(10);
             request.setAttribute("memberMessages", memberMessages);
 
